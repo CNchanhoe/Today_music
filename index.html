@@ -359,7 +359,7 @@
       rock: ['rock', 'alternative rock', 'modern rock'],
       hiphop: ['hip hop', 'rap', 'boom bap'],
       jazz: ['jazz', 'smooth jazz', 'bossa nova'],
-      classical: ['classical', 'baroque', 'romantic', 'chamber music', 'symphony'],
+      classical: ['symphony', 'concerto', 'sonata', 'violin concerto', 'cello', 'chamber music', 'baroque', 'classical'],
       lofi: ['lo-fi', 'chillhop', 'instrumental'],
       ambient: ['ambient', 'chillout', 'dream pop'],
       citypop: ['city pop', 'japanese pop', 'disco'],
@@ -422,7 +422,15 @@
       { id: 's53', genres: ['classical'], title: 'The Four Seasons: Spring, Op.8 No.1: I. Allegro', artist: 'Antonio Vivaldi', times: ['early_morning', 'morning', 'afternoon'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['happy', 'excited', 'drowsy'], target: ['energize', 'refresh', 'excited_up'] },
       { id: 's54', genres: ['classical'], title: 'Liebestraum No.3 in A-Flat Major, S.541', artist: 'Franz Liszt', times: ['sunset', 'night', 'late_night'], weathers: ['clear_breeze', 'rainy', 'snowy', 'cloudy'], current: ['calm', 'lonely', 'sad', 'excited'], target: ['comfort', 'reflective', 'rest'] },
       { id: 's55', genres: ['classical'], title: 'Pavane pour une infante défunte', artist: 'Maurice Ravel', times: ['early_morning', 'sunset', 'late_night'], weathers: ['drizzle', 'foggy', 'rainy', 'snowy'], current: ['tired', 'calm', 'drowsy', 'sad'], target: ['calm_down', 'sleep', 'rest', 'comfort'] },
-      { id: 's56', genres: ['classical'], title: 'Swan Lake, Op.20: Scene (Moderato)', artist: 'Pyotr Ilyich Tchaikovsky', times: ['sunset', 'night'], weathers: ['snowy', 'windy', 'cloudy', 'stormy'], current: ['stressed', 'frustrated', 'sad', 'focused'], target: ['reflective', 'confident', 'comfort'] }
+      { id: 's56', genres: ['classical'], title: 'Swan Lake, Op.20: Scene (Moderato)', artist: 'Pyotr Ilyich Tchaikovsky', times: ['sunset', 'night'], weathers: ['snowy', 'windy', 'cloudy', 'stormy'], current: ['stressed', 'frustrated', 'sad', 'focused'], target: ['reflective', 'confident', 'comfort'] },
+      { id: 's57', genres: ['classical'], title: 'Piano Concerto No.21 in C Major, K.467: II. Andante', artist: 'Wolfgang Amadeus Mozart', times: ['early_morning', 'morning', 'afternoon'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['calm', 'happy', 'focused'], target: ['calm_down', 'focus', 'rest', 'comfort'] },
+      { id: 's58', genres: ['classical'], title: 'Violin Concerto in E Minor, Op.64: I. Allegro molto appassionato', artist: 'Felix Mendelssohn', times: ['morning', 'afternoon', 'sunset'], weathers: ['windy', 'clear_breeze', 'cloudy'], current: ['excited', 'stressed', 'focused'], target: ['energize', 'confident', 'reflective'] },
+      { id: 's59', genres: ['classical'], title: 'Cello Concerto in E Minor, Op.85: I. Adagio - Moderato', artist: 'Edward Elgar', times: ['sunset', 'night', 'late_night'], weathers: ['rainy', 'foggy', 'cloudy', 'windy'], current: ['sad', 'lonely', 'tired'], target: ['reflective', 'comfort', 'calm_down'] },
+      { id: 's60', genres: ['classical'], title: 'Symphony No.9 "From the New World": II. Largo', artist: 'Antonín Dvořák', times: ['early_morning', 'sunset', 'night'], weathers: ['cloudy', 'clear_breeze', 'snowy'], current: ['tired', 'calm', 'lonely'], target: ['comfort', 'rest', 'reflective'] },
+      { id: 's61', genres: ['classical'], title: 'Étude in C-Sharp Minor, Op.2 No.1', artist: 'Alexander Scriabin', times: ['night', 'late_night', 'sunset'], weathers: ['rainy', 'snowy', 'foggy', 'cloudy'], current: ['sad', 'lonely', 'focused'], target: ['reflective', 'comfort', 'calm_down'] },
+      { id: 's62', genres: ['classical'], title: 'Má vlast: Vltava (The Moldau)', artist: 'Bedřich Smetana', times: ['early_morning', 'morning', 'afternoon'], weathers: ['sunny', 'clear_breeze', 'windy'], current: ['calm', 'excited', 'happy'], target: ['refresh', 'energize', 'reflective'] },
+      { id: 's63', genres: ['classical'], title: 'An der schönen blauen Donau (The Blue Danube), Op.314', artist: 'Johann Strauss II', times: ['morning', 'afternoon', 'sunset'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['happy', 'excited', 'drowsy'], target: ['excited_up', 'refresh', 'energize'] },
+      { id: 's64', genres: ['classical'], title: 'Morgen!, Op.27 No.4 (Orchestral Version)', artist: 'Richard Strauss', times: ['early_morning', 'sunset', 'night'], weathers: ['clear_breeze', 'drizzle', 'cloudy'], current: ['calm', 'tired', 'lonely'], target: ['comfort', 'calm_down', 'rest'] }
     ];
 
     const MOOD_TO_MB_TAGS = {
@@ -550,11 +558,28 @@
       document.body.removeChild(ta);
     }
 
+    function pickFinalFour(pool) {
+      if (state.genre === 'classical') {
+        const uniq = [];
+        const seenA = new Set();
+        for (const item of pool) {
+          const ak = item.artist.toLowerCase();
+          if (!seenA.has(ak)) {
+            seenA.add(ak);
+            uniq.push(item);
+          }
+          if (uniq.length >= 4) break;
+        }
+        if (uniq.length >= 4) return uniq;
+      }
+      return pool.slice(0, 4);
+    }
+
     function getLocalFallbackRecommendations(excludeKeys = []) {
       const currentIds = new Set(state.currentRecs.map(x => x.id));
       const genreFiltered = state.genre === 'all'
         ? SONGS
-        : SONGS.filter(song => song.genres && song.genres.includes(state.genre));
+        : SONGS.filter(song => song.genres && song.genres.includes(state.genre) && isAllowedForGenre(song));
       const pool = genreFiltered.length > 0 ? genreFiltered : SONGS;
       const scored = pool.map(song => {
         let score = 0;
@@ -575,7 +600,7 @@
         const j = Math.floor(Math.random() * (i + 1));
         [topPool[i], topPool[j]] = [topPool[j], topPool[i]];
       }
-      return topPool.slice(0, 4);
+      return pickFinalFour(topPool);
     }
 
     async function fetchArtistRelatedTags(name) {
@@ -597,6 +622,13 @@
       } catch (e) {
         return [];
       }
+    }
+
+    const CLASSICAL_EXCLUDE_RE = /yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가/i;
+
+    function isAllowedForGenre(song) {
+      if (state.genre !== 'classical') return true;
+      return !CLASSICAL_EXCLUDE_RE.test(`${song.title} ${song.artist}`);
     }
 
     async function queryMusicBrainzRecordings(queryStr, limit = 15, maxOffset = 150) {
@@ -621,6 +653,12 @@
           const dedupKey = `${title}::${artist}`.toLowerCase();
           if (seen.has(dedupKey) || state.recentSongIds.includes(id)) continue;
           seen.add(dedupKey);
+          if (!isAllowedForGenre({ title, artist })) continue;
+          if (queryStr.startsWith('artist:"')) {
+            const targetArtist = queryStr.slice(8, -1).trim();
+            const lastName = targetArtist.split(/\s+/).pop().toLowerCase();
+            if (lastName && !artist.toLowerCase().includes(lastName)) continue;
+          }
           parsed.push({ id, title, artist });
         }
         for (let i = parsed.length - 1; i > 0; i--) {
@@ -664,20 +702,49 @@
         }
       }
 
-      const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
-      const baseTag = basePool[Math.floor(Math.random() * basePool.length)];
-      const baseTracks = await queryMusicBrainzRecordings(`tag:"${baseTag}"`, 15, 150);
+      let baseTracks = [];
+      if (state.genre === 'classical') {
+        const composers = [
+          'Johann Sebastian Bach', 'Alexander Scriabin', 'Bedřich Smetana', 'Richard Strauss',
+          'Johann Strauss', 'Ludwig van Beethoven', 'Wolfgang Amadeus Mozart', 'Frédéric Chopin',
+          'Claude Debussy', 'Pyotr Ilyich Tchaikovsky', 'Johannes Brahms', 'Sergei Rachmaninoff',
+          'Franz Schubert', 'Antonio Vivaldi', 'Maurice Ravel', 'Gustav Mahler', 'Antonín Dvořák',
+          'Franz Liszt', 'Felix Mendelssohn', 'Edward Elgar', 'Camille Saint-Saëns'
+        ];
+        for (let i = composers.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [composers[i], composers[j]] = [composers[j], composers[i]];
+        }
+        const pickedComposers = composers.slice(0, 4);
+        const results = await Promise.all(
+          pickedComposers.map(c => queryMusicBrainzRecordings(`artist:"${c}"`, 6, 40))
+        );
+        results.forEach(arr => {
+          if (arr && arr.length) baseTracks.push(arr[0]);
+        });
+        results.forEach(arr => {
+          if (arr && arr.length > 1) baseTracks.push(...arr.slice(1));
+        });
+      } else {
+        const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
+        const baseTag = basePool[Math.floor(Math.random() * basePool.length)];
+        baseTracks = await queryMusicBrainzRecordings(`tag:"${baseTag}"`, 15, 150);
+      }
 
       // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
       const combined = [];
       const usedKeys = new Set();
+      const usedArtists = new Set();
       const pushUnique = (arr, maxCount) => {
         let added = 0;
         for (const item of arr) {
           if (added >= maxCount || combined.length >= 4) break;
           const k = `${item.title}::${item.artist}`.toLowerCase();
+          const aKey = item.artist.toLowerCase();
           if (usedKeys.has(k)) continue;
+          if (state.genre === 'classical' && usedArtists.has(aKey)) continue;
           usedKeys.add(k);
+          usedArtists.add(aKey);
           combined.push(item);
           added++;
         }
@@ -741,7 +808,7 @@
             const currentIds = new Set(state.currentRecs.map(x => x.id));
             const filtered = state.genre === 'all'
               ? allSongs
-              : allSongs.filter(song => song.genres && song.genres.includes(state.genre));
+              : allSongs.filter(song => song.genres && song.genres.includes(state.genre) && isAllowedForGenre(song));
             const pool = filtered.length > 0 ? filtered : allSongs;
             const scored = pool.map(song => {
               let score = 0;
@@ -765,7 +832,7 @@
               const j = Math.floor(Math.random() * (i + 1));
               [topPool[i], topPool[j]] = [topPool[j], topPool[i]];
             }
-            resolve(topPool.slice(0, 4));
+            resolve(pickFinalFour(topPool));
           };
           req.onerror = () => resolve(getLocalFallbackRecommendations(excludeKeys));
         } catch (e) {
@@ -840,8 +907,22 @@
       reroll.textContent = '다른 곡 다시 추천받기';
     }
 
+    function cleanSearchQuery(song) {
+      const primaryArtist = (song.artist || '')
+        .split(/[;,&]/)[0]
+        .replace(/\([^)]*\)/g, ' ')
+        .trim();
+      const cleanTitle = (song.title || '')
+        .replace(/\((?:feat|ft|remaster|live|mono|stereo|version|edit|bonus)[^)]*\)/gi, ' ')
+        .replace(/\[[^\]]*\]/g, ' ')
+        .replace(/["'“”‘’:/]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return `${primaryArtist} ${cleanTitle}`.trim();
+    }
+
     function buildPlatformLinks(song) {
-      const q = encodeURIComponent(`${song.artist} ${song.title}`);
+      const q = encodeURIComponent(cleanSearchQuery(song));
       return {
         youtube: `https://music.youtube.com/search?q=${q}`,
         spotify: `https://open.spotify.com/search/${q}`,
