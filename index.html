@@ -359,12 +359,243 @@
       rock: ['rock', 'alternative rock', 'modern rock'],
       hiphop: ['hip hop', 'rap', 'boom bap'],
       jazz: ['jazz', 'smooth jazz', 'bossa nova'],
-      classical: ['symphony', 'concerto', 'sonata', 'violin concerto', 'cello', 'chamber music', 'baroque', 'classical'],
+      classical: ['symphony', 'concerto', 'violin concerto', 'piano concerto', 'cello concerto', 'piano sonata', 'violin sonata', 'cello sonata', 'string quartet', 'chamber music', 'nocturne', 'prelude', 'etude', 'symphonic poem', 'overture', 'baroque', 'romanticism', 'impressionism', 'classical'],
       lofi: ['lo-fi', 'chillhop', 'instrumental'],
       ambient: ['ambient', 'chillout', 'dream pop'],
       citypop: ['city pop', 'japanese pop', 'disco'],
       acoustic: ['acoustic', 'singer-songwriter', 'folk']
     };
+
+    const GENRE_ARTISTS = {
+      "pop": [
+            "Taylor Swift",
+            "The Weeknd",
+            "Bruno Mars",
+            "Dua Lipa",
+            "Ed Sheeran",
+            "Billie Eilish",
+            "Ariana Grande",
+            "Charlie Puth",
+            "Justin Bieber",
+            "Coldplay",
+            "Maroon 5",
+            "Lauv",
+            "Shawn Mendes",
+            "Harry Styles",
+            "Adele",
+            "Sabrina Carpenter",
+            "Olivia Rodrigo",
+            "Troye Sivan",
+            "Sam Smith",
+            "Katy Perry"
+      ],
+      "kpop": [
+            "IU",
+            "BTS",
+            "NewJeans",
+            "DAY6",
+            "AKMU",
+            "Taeyeon",
+            "aespa",
+            "BLACKPINK",
+            "SEVENTEEN",
+            "Red Velvet",
+            "EXO",
+            "Paul Kim",
+            "Heize",
+            "10CM",
+            "Jannabi",
+            "Younha",
+            "Crush",
+            "Zion.T",
+            "Baek Yerin",
+            "BOL4"
+      ],
+      "rnb": [
+            "Frank Ocean",
+            "Daniel Caesar",
+            "SZA",
+            "H.E.R.",
+            "Bruno Major",
+            "The Weeknd",
+            "Khalid",
+            "Giveon",
+            "Brent Faiyaz",
+            "Mac Ayres",
+            "Summer Walker",
+            "Dean",
+            "Crush",
+            "Colde",
+            "Usher",
+            "Alicia Keys",
+            "John Legend",
+            "D'Angelo"
+      ],
+      "soul": [
+            "Stevie Wonder",
+            "Aretha Franklin",
+            "Marvin Gaye",
+            "Silk Sonic",
+            "Leon Bridges",
+            "Amy Winehouse",
+            "Corinne Bailey Rae",
+            "Sam Cooke",
+            "Otis Redding",
+            "Erykah Badu",
+            "Al Green",
+            "Bill Withers",
+            "John Mayer",
+            "Norah Jones",
+            "Michael Kiwanuka",
+            "Yebba"
+      ],
+      "indie": [
+            "The 1975",
+            "LANY",
+            "Cigarettes After Sex",
+            "Tame Impala",
+            "Arctic Monkeys",
+            "Mac DeMarco",
+            "Men I Trust",
+            "Clairo",
+            "Rex Orange County",
+            "Beach House",
+            "The Black Skirts",
+            "HYUKOH",
+            "Jannabi",
+            "Baek Yerin",
+            "wave to earth",
+            "Phoebe Bridgers"
+      ],
+      "rock": [
+            "Queen",
+            "Coldplay",
+            "Oasis",
+            "Radiohead",
+            "Linkin Park",
+            "Imagine Dragons",
+            "Muse",
+            "The Beatles",
+            "Nirvana",
+            "Green Day",
+            "Foo Fighters",
+            "Maroon 5",
+            "DAY6",
+            "Younha",
+            "OneRepublic",
+            "U2",
+            "Red Hot Chili Peppers",
+            "The Killers"
+      ],
+      "hiphop": [
+            "Kendrick Lamar",
+            "Drake",
+            "Kanye West",
+            "Travis Scott",
+            "Tyler, The Creator",
+            "J. Cole",
+            "Post Malone",
+            "Mac Miller",
+            "Nujabes",
+            "EPIK HIGH",
+            "ZICO",
+            "beenzino",
+            "Kid Cudi",
+            "A$AP Rocky",
+            "Eminem",
+            "Jay-Z"
+      ],
+      "jazz": [
+            "Chet Baker",
+            "Miles Davis",
+            "Bill Evans",
+            "John Coltrane",
+            "Norah Jones",
+            "Frank Sinatra",
+            "Ella Fitzgerald",
+            "Louis Armstrong",
+            "Nat King Cole",
+            "Stan Getz",
+            "João Gilberto",
+            "Nina Simone",
+            "Herbie Hancock",
+            "Kamasi Washington",
+            "Robert Glasper",
+            "Laufey"
+      ],
+      "lofi": [
+            "Nujabes",
+            "Jinsang",
+            "Idealism",
+            "potsu",
+            "Kupla",
+            "eevee",
+            "SwuM",
+            "Jhove",
+            "Lofi Girl",
+            "Tomppabeats",
+            "Bsd.u",
+            "ChilledCow",
+            "In Love With a Ghost",
+            "Ryuichi Sakamoto",
+            "Joe Hisaishi",
+            "Yiruma"
+      ],
+      "ambient": [
+            "Brian Eno",
+            "Ryuichi Sakamoto",
+            "Max Richter",
+            "Ludovico Einaudi",
+            "Ólafur Arnalds",
+            "Nils Frahm",
+            "Yiruma",
+            "Joe Hisaishi",
+            "Hammock",
+            "Stars of the Lid",
+            "Tycho",
+            "Aphex Twin",
+            "Sigur Rós",
+            "M83",
+            "Explosions in the Sky",
+            "Bonobo"
+      ],
+      "citypop": [
+            "Tatsuro Yamashita",
+            "Mariya Takeuchi",
+            "Anri",
+            "Miki Matsubara",
+            "Taeko Onuki",
+            "Junko Yagami",
+            "Toshiki Kadomatsu",
+            "Omega Tribe",
+            "Meiko Nakahara",
+            "Yukika",
+            "Yubin",
+            "Bronze",
+            "Fujii Kaze",
+            "Kirinji",
+            "Casiopea",
+            "Piper"
+      ],
+      "acoustic": [
+            "Jason Mraz",
+            "Ed Sheeran",
+            "John Mayer",
+            "Jack Johnson",
+            "10CM",
+            "IU",
+            "Jukjae",
+            "Kwak Jin Eon",
+            "Damien Rice",
+            "James Taylor",
+            "Simon & Garfunkel",
+            "Norah Jones",
+            "Ben Howard",
+            "Bon Iver",
+            "Sufjan Stevens",
+            "Iron & Wine"
+      ]
+};
 
     const SONGS = [
       { id: 's1', genres: ['pop', 'rnb', 'acoustic'], title: 'Paris in the Rain', artist: 'Lauv', times: ['morning', 'afternoon', 'sunset'], weathers: ['drizzle', 'rainy', 'partly_cloudy'], current: ['calm', 'drowsy', 'excited', 'happy'], target: ['refresh', 'comfort', 'rest'] },
@@ -430,7 +661,27 @@
       { id: 's61', genres: ['classical'], title: 'Étude in C-Sharp Minor, Op.2 No.1', artist: 'Alexander Scriabin', times: ['night', 'late_night', 'sunset'], weathers: ['rainy', 'snowy', 'foggy', 'cloudy'], current: ['sad', 'lonely', 'focused'], target: ['reflective', 'comfort', 'calm_down'] },
       { id: 's62', genres: ['classical'], title: 'Má vlast: Vltava (The Moldau)', artist: 'Bedřich Smetana', times: ['early_morning', 'morning', 'afternoon'], weathers: ['sunny', 'clear_breeze', 'windy'], current: ['calm', 'excited', 'happy'], target: ['refresh', 'energize', 'reflective'] },
       { id: 's63', genres: ['classical'], title: 'An der schönen blauen Donau (The Blue Danube), Op.314', artist: 'Johann Strauss II', times: ['morning', 'afternoon', 'sunset'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['happy', 'excited', 'drowsy'], target: ['excited_up', 'refresh', 'energize'] },
-      { id: 's64', genres: ['classical'], title: 'Morgen!, Op.27 No.4 (Orchestral Version)', artist: 'Richard Strauss', times: ['early_morning', 'sunset', 'night'], weathers: ['clear_breeze', 'drizzle', 'cloudy'], current: ['calm', 'tired', 'lonely'], target: ['comfort', 'calm_down', 'rest'] }
+      { id: 's64', genres: ['classical'], title: 'Morgen!, Op.27 No.4 (Orchestral Version)', artist: 'Richard Strauss', times: ['early_morning', 'sunset', 'night'], weathers: ['clear_breeze', 'drizzle', 'cloudy'], current: ['calm', 'tired', 'lonely'], target: ['comfort', 'calm_down', 'rest'] },
+      { id: 's65', genres: ['soul'], title: 'Superstition', artist: 'Stevie Wonder', times: ['morning', 'afternoon'], weathers: ['sunny', 'clear_breeze'], current: ['happy', 'excited', 'drowsy'], target: ['energize', 'excited_up', 'refresh'] },
+      { id: 's66', genres: ['soul'], title: 'What\'s Going On', artist: 'Marvin Gaye', times: ['sunset', 'night'], weathers: ['cloudy', 'rainy', 'windy'], current: ['sad', 'stressed', 'focused'], target: ['comfort', 'reflective', 'calm_down'] },
+      { id: 's67', genres: ['soul'], title: 'Valerie', artist: 'Amy Winehouse', times: ['afternoon', 'sunset', 'night'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['happy', 'frustrated', 'tired'], target: ['excited_up', 'refresh', 'energize'] },
+      { id: 's68', genres: ['citypop'], title: 'Stay With Me', artist: 'Miki Matsubara', times: ['sunset', 'night', 'late_night'], weathers: ['rainy', 'clear_breeze', 'windy'], current: ['lonely', 'drowsy', 'calm'], target: ['reflective', 'refresh', 'comfort'] },
+      { id: 's69', genres: ['citypop'], title: '4:00 A.M.', artist: 'Taeko Onuki', times: ['night', 'late_night'], weathers: ['foggy', 'rainy', 'cloudy'], current: ['lonely', 'tired', 'calm'], target: ['calm_down', 'reflective', 'sleep'] },
+      { id: 's70', genres: ['citypop'], title: 'Midnight Pretenders', artist: 'Tomoko Aran', times: ['night', 'late_night'], weathers: ['clear_breeze', 'cloudy', 'rainy'], current: ['drowsy', 'lonely', 'focused'], target: ['reflective', 'rest', 'calm_down'] },
+      { id: 's71', genres: ['lofi'], title: 'Feather', artist: 'Nujabes', times: ['morning', 'afternoon', 'sunset'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['focused', 'calm', 'happy'], target: ['focus', 'refresh', 'calm_down'] },
+      { id: 's72', genres: ['lofi'], title: 'I\'m Closing My Eyes', artist: 'potsu', times: ['night', 'late_night'], weathers: ['rainy', 'drizzle', 'snowy'], current: ['tired', 'drowsy', 'sad'], target: ['sleep', 'rest', 'calm_down'] },
+      { id: 's73', genres: ['lofi'], title: 'Snowfall', artist: 'Øneheart & reidenshi', times: ['early_morning', 'night', 'late_night'], weathers: ['snowy', 'foggy', 'rainy'], current: ['lonely', 'tired', 'focused'], target: ['sleep', 'focus', 'calm_down'] },
+      { id: 's74', genres: ['acoustic'], title: 'Better Together', artist: 'Jack Johnson', times: ['early_morning', 'morning', 'afternoon'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['calm', 'happy', 'drowsy'], target: ['rest', 'comfort', 'refresh'] },
+      { id: 's75', genres: ['acoustic'], title: 'Gravity', artist: 'John Mayer', times: ['sunset', 'night', 'late_night'], weathers: ['rainy', 'cloudy', 'foggy'], current: ['sad', 'stressed', 'tired'], target: ['reflective', 'comfort', 'calm_down'] },
+      { id: 's76', genres: ['acoustic'], title: 'Photograph', artist: 'Ed Sheeran', times: ['sunset', 'night'], weathers: ['snowy', 'cloudy', 'clear_breeze'], current: ['lonely', 'sad', 'calm'], target: ['comfort', 'reflective', 'rest'] },
+      { id: 's77', genres: ['acoustic', 'kpop'], title: '별 보러 가자', artist: '적재', times: ['night', 'late_night', 'sunset'], weathers: ['clear_breeze', 'sunny', 'partly_cloudy'], current: ['calm', 'excited', 'lonely'], target: ['comfort', 'rest', 'calm_down'] },
+      { id: 's78', genres: ['ambient'], title: 'Nuvole Bianche', artist: 'Ludovico Einaudi', times: ['early_morning', 'night', 'late_night'], weathers: ['snowy', 'rainy', 'foggy', 'cloudy'], current: ['focused', 'sad', 'calm'], target: ['focus', 'sleep', 'calm_down', 'reflective'] },
+      { id: 's79', genres: ['ambient'], title: 'On the Nature of Daylight', artist: 'Max Richter', times: ['sunset', 'night', 'late_night'], weathers: ['rainy', 'cloudy', 'foggy'], current: ['sad', 'lonely', 'focused'], target: ['reflective', 'comfort', 'calm_down'] },
+      { id: 's80', genres: ['jazz'], title: 'Autumn Leaves', artist: 'Chet Baker', times: ['sunset', 'night'], weathers: ['windy', 'cloudy', 'rainy'], current: ['calm', 'lonely', 'drowsy'], target: ['calm_down', 'rest', 'reflective'] },
+      { id: 's81', genres: ['jazz'], title: 'From The Start', artist: 'Laufey', times: ['morning', 'afternoon', 'sunset'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['excited', 'happy', 'calm'], target: ['refresh', 'excited_up', 'comfort'] },
+      { id: 's82', genres: ['hiphop'], title: 'Sunflower', artist: 'Post Malone & Swae Lee', times: ['morning', 'afternoon', 'sunset'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['happy', 'excited', 'tired'], target: ['energize', 'refresh', 'excited_up'] },
+      { id: 's83', genres: ['hiphop'], title: 'See You Again', artist: 'Tyler, The Creator (feat. Kali Uchis)', times: ['afternoon', 'sunset'], weathers: ['sunny', 'clear_breeze', 'partly_cloudy'], current: ['excited', 'happy', 'drowsy'], target: ['refresh', 'reflective', 'comfort'] },
+      { id: 's84', genres: ['indie'], title: 'bad', artist: 'wave to earth', times: ['afternoon', 'sunset', 'night'], weathers: ['clear_breeze', 'partly_cloudy', 'drizzle'], current: ['calm', 'drowsy', 'happy'], target: ['calm_down', 'rest', 'refresh'] }
     ];
 
     const MOOD_TO_MB_TAGS = {
@@ -559,7 +810,7 @@
     }
 
     function pickFinalFour(pool) {
-      if (state.genre === 'classical') {
+      {
         const uniq = [];
         const seenA = new Set();
         for (const item of pool) {
@@ -624,17 +875,18 @@
       }
     }
 
-    const CLASSICAL_EXCLUDE_RE = /yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가/i;
+    const CLASSICAL_EXCLUDE_RE = /yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|clayderman|2cellos|garrett|maksim|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|\bpop\b|synth|electronic|new age|ambient|crossover|cinematic|lofi|lo-fi|avant.?garde|atonal|serialism|twelve.?tone|electroacoustic|musique concrète|microtonal|experimental|noise|cage|stockhausen|xenakis|boulez|penderecki|ligeti|ferneyhough|schoenberg|webern|berg|feldman|berio|nono|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가/i;
 
     const CLASSICAL_COMPOSER_WHITELIST_RE = /albeniz|albinoni|albéniz|bach|barber|bartok|bartók|beethoven|berlioz|bizet|boccherini|borodin|brahms|bruch|bruckner|chopin|clementi|copland|corelli|debussy|dvorak|dvořák|elgar|falla|faure|fauré|franck|gluck|granados|grieg|handel|haydn|holst|liszt|mahler|mendelssohn|monteverdi|mozart|mussorgsky|paganini|prokofiev|puccini|purcell|rachmaninoff|rameau|ravel|respighi|rimsky-korsakov|rossini|saint-saens|saint-saëns|sarasate|satie|scarlatti|schubert|schumann|scriabin|shostakovich|sibelius|smetana|strauss|stravinsky|tchaikovsky|telemann|vaughan williams|verdi|vivaldi|wagner|wieniawski/i;
 
-    function isAllowedForGenre(song) {
+    function isAllowedForGenre(song, fromStrictClassicalTag = false) {
       if (state.genre !== 'classical') return true;
       if (CLASSICAL_EXCLUDE_RE.test(`${song.title} ${song.artist}`)) return false;
+      if (fromStrictClassicalTag) return true;
       return CLASSICAL_COMPOSER_WHITELIST_RE.test(song.artist || '');
     }
 
-    async function queryMusicBrainzRecordings(queryStr, limit = 15, maxOffset = 150) {
+    async function queryMusicBrainzRecordings(queryStr, limit = 15, maxOffset = 150, strictClassicalTag = false) {
       const offset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
       const url = `https://musicbrainz.org/ws/2/recording/?query=${encodeURIComponent(queryStr)}&limit=${limit}&offset=${offset}&fmt=json`;
       const controller = new AbortController();
@@ -656,13 +908,13 @@
           const dedupKey = `${title}::${artist}`.toLowerCase();
           if (seen.has(dedupKey) || state.recentSongIds.includes(id)) continue;
           seen.add(dedupKey);
-          if (!isAllowedForGenre({ title, artist })) continue;
+          if (!isAllowedForGenre({ title, artist }, strictClassicalTag)) continue;
           if (queryStr.startsWith('artist:"')) {
             const targetArtist = queryStr.slice(8, -1).trim();
             const lastName = targetArtist.split(/\s+/).pop().toLowerCase();
             if (lastName && !artist.toLowerCase().includes(lastName)) continue;
           }
-          parsed.push({ id, title, artist });
+          parsed.push({ id, title, artist, strictClassical: strictClassicalTag });
         }
         for (let i = parsed.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -707,25 +959,45 @@
 
       let baseTracks = [];
       if (state.genre === 'classical') {
-        const composers = ['Johann Sebastian Bach', 'Antonio Vivaldi', 'George Frideric Handel', 'Domenico Scarlatti', 'Henry Purcell', 'Arcangelo Corelli', 'Georg Philipp Telemann', 'Jean-Philippe Rameau', 'Claudio Monteverdi', 'Tomaso Albinoni', 'Wolfgang Amadeus Mozart', 'Ludwig van Beethoven', 'Joseph Haydn', 'Christoph Willibald Gluck', 'Muzio Clementi', 'Luigi Boccherini', 'Frédéric Chopin', 'Franz Schubert', 'Robert Schumann', 'Clara Schumann', 'Franz Liszt', 'Johannes Brahms', 'Felix Mendelssohn', 'Pyotr Ilyich Tchaikovsky', 'Sergei Rachmaninoff', 'Alexander Scriabin', 'Bedřich Smetana', 'Antonín Dvořák', 'Richard Strauss', 'Johann Strauss', 'Gustav Mahler', 'Hector Berlioz', 'Georges Bizet', 'Camille Saint-Saëns', 'Gabriel Fauré', 'César Franck', 'Edvard Grieg', 'Jean Sibelius', 'Edward Elgar', 'Niccolò Paganini', 'Modest Mussorgsky', 'Nikolai Rimsky-Korsakov', 'Alexander Borodin', 'Gioachino Rossini', 'Giuseppe Verdi', 'Giacomo Puccini', 'Richard Wagner', 'Anton Bruckner', 'Max Bruch', 'Pablo de Sarasate', 'Henryk Wieniawski', 'Isaac Albéniz', 'Enrique Granados', 'Claude Debussy', 'Maurice Ravel', 'Erik Satie', 'Igor Stravinsky', 'Sergei Prokofiev', 'Dmitri Shostakovich', 'Béla Bartók', 'Gustav Holst', 'Ralph Vaughan Williams', 'Ottorino Respighi', 'Manuel de Falla', 'Samuel Barber', 'Aaron Copland'];
-        for (let i = composers.length - 1; i > 0; i--) {
+        const classicalTags = [...GENRE_TO_MB_TAGS.classical];
+        for (let i = classicalTags.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [composers[i], composers[j]] = [composers[j], composers[i]];
+          [classicalTags[i], classicalTags[j]] = [classicalTags[j], classicalTags[i]];
         }
-        const pickedComposers = composers.slice(0, 4);
-        const results = await Promise.all(
-          pickedComposers.map(c => queryMusicBrainzRecordings(`artist:"${c}"`, 6, 40))
-        );
-        results.forEach(arr => {
-          if (arr && arr.length) baseTracks.push(arr[0]);
-        });
-        results.forEach(arr => {
-          if (arr && arr.length > 1) baseTracks.push(...arr.slice(1));
-        });
+        const [t1, t2] = await Promise.all([
+          queryMusicBrainzRecordings(`tag:"${classicalTags[0]}" AND status:official`, 15, 2500, true),
+          queryMusicBrainzRecordings(`tag:"${classicalTags[1]}" AND status:official`, 15, 2500, true)
+        ]);
+        baseTracks = [...t1, ...t2];
+        for (let i = baseTracks.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
+        }
       } else {
+        // Hybrid: 1-2 from famous artists + 2-3 from full MusicBrainz DB (status:official)
         const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
-        const baseTag = basePool[Math.floor(Math.random() * basePool.length)];
-        baseTracks = await queryMusicBrainzRecordings(`tag:"${baseTag}"`, 15, 150);
+        const chosenTag = basePool[Math.floor(Math.random() * basePool.length)];
+        const artistPool = (state.genre !== 'all' && GENRE_ARTISTS[state.genre])
+          ? [...GENRE_ARTISTS[state.genre]]
+          : Object.values(GENRE_ARTISTS).flat();
+        for (let i = artistPool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [artistPool[i], artistPool[j]] = [artistPool[j], artistPool[i]];
+        }
+        const pickedArtists = artistPool.slice(0, 2);
+
+        const [a1, a2, globalTracks] = await Promise.all([
+          queryMusicBrainzRecordings(`artist:"${pickedArtists[0]}"`, 6, 25),
+          queryMusicBrainzRecordings(`artist:"${pickedArtists[1]}"`, 6, 25),
+          queryMusicBrainzRecordings(`tag:"${chosenTag}" AND status:official`, 15, 2000)
+        ]);
+
+        const famousPart = [];
+        if (a1.length) famousPart.push(a1[0]);
+        if (a2.length) famousPart.push(a2[0]);
+
+        // Interleave global official DB tracks + famous artist tracks
+        baseTracks = [...globalTracks.slice(0, 2), ...famousPart, ...globalTracks.slice(2)];
       }
 
       // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
@@ -739,7 +1011,7 @@
           const k = `${item.title}::${item.artist}`.toLowerCase();
           const aKey = item.artist.toLowerCase();
           if (usedKeys.has(k)) continue;
-          if (state.genre === 'classical' && usedArtists.has(aKey)) continue;
+          if (usedArtists.has(aKey)) continue;
           usedKeys.add(k);
           usedArtists.add(aKey);
           combined.push(item);
@@ -784,6 +1056,7 @@
           title: t.title,
           artist: t.artist,
           genres: state.genre !== 'all' ? [state.genre] : ['pop'],
+          strictClassical: !!t.strictClassical,
           times: [],
           weathers: [],
           current: [],
@@ -805,7 +1078,7 @@
             const currentIds = new Set(state.currentRecs.map(x => x.id));
             const filtered = state.genre === 'all'
               ? allSongs
-              : allSongs.filter(song => song.genres && song.genres.includes(state.genre) && isAllowedForGenre(song));
+              : allSongs.filter(song => song.genres && song.genres.includes(state.genre) && isAllowedForGenre(song, !!song.strictClassical));
             const pool = filtered.length > 0 ? filtered : allSongs;
             const scored = pool.map(song => {
               let score = 0;
@@ -1390,7 +1663,7 @@
       ctx.closePath();
     }
 
-    async function renderShareCard() {
+    async function renderShareCard(skipArtwork = false) {
       const song = state.currentRecs.find(x => x.id === state.selectedCardSongId) || state.currentRecs[0];
       if (!song) return;
 
@@ -1459,7 +1732,7 @@
       ctx.textAlign = 'center';
       ctx.fillText('♪', coverX + coverSize / 2, coverY + coverSize / 2 + 28);
 
-      const artworkUrl = await fetchArtworkUrl(song);
+      const artworkUrl = skipArtwork ? null : await fetchArtworkUrl(song);
       const img = await loadCorsImage(artworkUrl);
       if (img) {
         ctx.drawImage(img, coverX, coverY, coverSize, coverSize);
@@ -1512,10 +1785,9 @@
       }
     });
 
-    document.getElementById('btn-download-card').addEventListener('click', () => {
+    document.getElementById('btn-download-card').addEventListener('click', async () => {
       const canvas = document.getElementById('share-card-canvas');
-      try {
-        const url = canvas.toDataURL('image/png');
+      const triggerDownload = (url) => {
         const a = document.createElement('a');
         a.href = url;
         a.download = `todays_music_${formatToday()}.png`;
@@ -1523,8 +1795,16 @@
         a.click();
         document.body.removeChild(a);
         showToast('오늘의 음악 카드를 저장했어요!');
+      };
+      try {
+        triggerDownload(canvas.toDataURL('image/png'));
       } catch (e) {
-        showToast('이미지 저장에 실패했습니다.');
+        await renderShareCard(true);
+        try {
+          triggerDownload(canvas.toDataURL('image/png'));
+        } catch (err) {
+          showToast('이미지 저장에 실패했습니다.');
+        }
       }
     });
 

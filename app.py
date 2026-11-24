@@ -31,7 +31,232 @@ app.add_middleware(
 )
 
 CLASSICAL_COMPOSER_WHITELIST_RE = re.compile(r"albeniz|albinoni|albéniz|bach|barber|bartok|bartók|beethoven|berlioz|bizet|boccherini|borodin|brahms|bruch|bruckner|chopin|clementi|copland|corelli|debussy|dvorak|dvořák|elgar|falla|faure|fauré|franck|gluck|granados|grieg|handel|haydn|holst|liszt|mahler|mendelssohn|monteverdi|mozart|mussorgsky|paganini|prokofiev|puccini|purcell|rachmaninoff|rameau|ravel|respighi|rimsky-korsakov|rossini|saint-saens|saint-saëns|sarasate|satie|scarlatti|schubert|schumann|scriabin|shostakovich|sibelius|smetana|strauss|stravinsky|tchaikovsky|telemann|vaughan williams|verdi|vivaldi|wagner|wieniawski", re.I)
-CLASSICAL_EXCLUDE_RE = re.compile(r"yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가", re.I)
+CLASSICAL_EXCLUDE_RE = re.compile(r"yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|clayderman|2cellos|garrett|maksim|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|\bpop\b|synth|electronic|new age|ambient|crossover|cinematic|lofi|lo-fi|avant.?garde|atonal|serialism|twelve.?tone|electroacoustic|musique concrète|microtonal|experimental|noise|cage|stockhausen|xenakis|boulez|penderecki|ligeti|ferneyhough|schoenberg|webern|berg|feldman|berio|nono|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가", re.I)
+
+GENRE_ARTISTS = {
+    "pop": [
+        "Taylor Swift",
+        "The Weeknd",
+        "Bruno Mars",
+        "Dua Lipa",
+        "Ed Sheeran",
+        "Billie Eilish",
+        "Ariana Grande",
+        "Charlie Puth",
+        "Justin Bieber",
+        "Coldplay",
+        "Maroon 5",
+        "Lauv",
+        "Shawn Mendes",
+        "Harry Styles",
+        "Adele",
+        "Sabrina Carpenter",
+        "Olivia Rodrigo",
+        "Troye Sivan"
+    ],
+    "kpop": [
+        "IU",
+        "BTS",
+        "NewJeans",
+        "DAY6",
+        "AKMU",
+        "Taeyeon",
+        "aespa",
+        "BLACKPINK",
+        "SEVENTEEN",
+        "Red Velvet",
+        "EXO",
+        "Paul Kim",
+        "Heize",
+        "10CM",
+        "Jannabi",
+        "Younha",
+        "Crush",
+        "Zion.T",
+        "Baek Yerin",
+        "BOL4"
+    ],
+    "rnb": [
+        "Frank Ocean",
+        "Daniel Caesar",
+        "SZA",
+        "H.E.R.",
+        "Bruno Major",
+        "The Weeknd",
+        "Khalid",
+        "Giveon",
+        "Brent Faiyaz",
+        "Mac Ayres",
+        "Summer Walker",
+        "Dean",
+        "Crush",
+        "Colde",
+        "Usher",
+        "Alicia Keys",
+        "John Legend"
+    ],
+    "soul": [
+        "Stevie Wonder",
+        "Aretha Franklin",
+        "Marvin Gaye",
+        "Silk Sonic",
+        "Leon Bridges",
+        "Amy Winehouse",
+        "Corinne Bailey Rae",
+        "Sam Cooke",
+        "Otis Redding",
+        "Erykah Badu",
+        "Al Green",
+        "Bill Withers",
+        "John Mayer",
+        "Norah Jones",
+        "Michael Kiwanuka"
+    ],
+    "indie": [
+        "The 1975",
+        "LANY",
+        "Cigarettes After Sex",
+        "Tame Impala",
+        "Arctic Monkeys",
+        "Mac DeMarco",
+        "Men I Trust",
+        "Clairo",
+        "Rex Orange County",
+        "Beach House",
+        "The Black Skirts",
+        "HYUKOH",
+        "Jannabi",
+        "Baek Yerin",
+        "wave to earth",
+        "Phoebe Bridgers"
+    ],
+    "rock": [
+        "Queen",
+        "Coldplay",
+        "Oasis",
+        "Radiohead",
+        "Linkin Park",
+        "Imagine Dragons",
+        "Muse",
+        "The Beatles",
+        "Nirvana",
+        "Green Day",
+        "Foo Fighters",
+        "Maroon 5",
+        "DAY6",
+        "Younha",
+        "OneRepublic",
+        "U2",
+        "Red Hot Chili Peppers",
+        "The Killers"
+    ],
+    "hiphop": [
+        "Kendrick Lamar",
+        "Drake",
+        "Kanye West",
+        "Travis Scott",
+        "Tyler, The Creator",
+        "J. Cole",
+        "Post Malone",
+        "Mac Miller",
+        "Nujabes",
+        "EPIK HIGH",
+        "ZICO",
+        "beenzino",
+        "Kid Cudi",
+        "A$AP Rocky",
+        "Eminem",
+        "Jay-Z"
+    ],
+    "jazz": [
+        "Chet Baker",
+        "Miles Davis",
+        "Bill Evans",
+        "John Coltrane",
+        "Norah Jones",
+        "Frank Sinatra",
+        "Ella Fitzgerald",
+        "Louis Armstrong",
+        "Nat King Cole",
+        "Stan Getz",
+        "João Gilberto",
+        "Nina Simone",
+        "Herbie Hancock",
+        "Kamasi Washington",
+        "Robert Glasper",
+        "Laufey"
+    ],
+    "lofi": [
+        "Nujabes",
+        "Jinsang",
+        "Idealism",
+        "potsu",
+        "Kupla",
+        "eevee",
+        "SwuM",
+        "Jhove",
+        "Lofi Girl",
+        "Tomppabeats",
+        "Bsd.u",
+        "In Love With a Ghost",
+        "Ryuichi Sakamoto",
+        "Joe Hisaishi",
+        "Yiruma"
+    ],
+    "ambient": [
+        "Brian Eno",
+        "Ryuichi Sakamoto",
+        "Max Richter",
+        "Ludovico Einaudi",
+        "Ólafur Arnalds",
+        "Nils Frahm",
+        "Yiruma",
+        "Joe Hisaishi",
+        "Hammock",
+        "Stars of the Lid",
+        "Tycho",
+        "Aphex Twin",
+        "Sigur Rós",
+        "M83",
+        "Explosions in the Sky",
+        "Bonobo"
+    ],
+    "citypop": [
+        "Tatsuro Yamashita",
+        "Mariya Takeuchi",
+        "Anri",
+        "Miki Matsubara",
+        "Taeko Onuki",
+        "Junko Yagami",
+        "Toshiki Kadomatsu",
+        "Omega Tribe",
+        "Meiko Nakahara",
+        "Yukika",
+        "Yubin",
+        "Bronze",
+        "Fujii Kaze",
+        "Kirinji",
+        "Casiopea"
+    ],
+    "acoustic": [
+        "Jason Mraz",
+        "Ed Sheeran",
+        "John Mayer",
+        "Jack Johnson",
+        "10CM",
+        "IU",
+        "Jukjae",
+        "Kwak Jin Eon",
+        "Damien Rice",
+        "James Taylor",
+        "Simon & Garfunkel",
+        "Norah Jones",
+        "Ben Howard",
+        "Bon Iver",
+        "Sufjan Stevens",
+        "Iron & Wine"
+    ]
+}
 
 GENRE_TO_MB_TAGS = {
     "pop": ["pop", "synthpop", "dance pop"],
@@ -42,7 +267,7 @@ GENRE_TO_MB_TAGS = {
     "rock": ["rock", "alternative rock", "modern rock"],
     "hiphop": ["hip hop", "rap", "boom bap"],
     "jazz": ["jazz", "smooth jazz", "bossa nova"],
-    "classical": ["symphony", "concerto", "sonata", "violin concerto", "cello", "chamber music", "baroque", "classical"],
+    "classical": ["symphony", "concerto", "violin concerto", "piano concerto", "cello concerto", "piano sonata", "violin sonata", "cello sonata", "string quartet", "chamber music", "nocturne", "prelude", "etude", "symphonic poem", "overture", "baroque", "romanticism", "impressionism", "classical"],
     "lofi": ["lo-fi", "chillhop", "instrumental"],
     "ambient": ["ambient", "chillout", "dream pop"],
     "citypop": ["city pop", "japanese pop", "disco"],
@@ -114,6 +339,26 @@ SEED_SONGS = [
     ("s62", "Má vlast: Vltava (The Moldau)", "Bedřich Smetana", ["classical"], ["early_morning", "morning", "afternoon"], ["sunny", "clear_breeze", "windy"], ["calm", "excited", "happy"], ["refresh", "energize", "reflective"]),
     ("s63", "An der schönen blauen Donau (The Blue Danube), Op.314", "Johann Strauss II", ["classical"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "excited", "drowsy"], ["excited_up", "refresh", "energize"]),
     ("s64", "Morgen!, Op.27 No.4 (Orchestral Version)", "Richard Strauss", ["classical"], ["early_morning", "sunset", "night"], ["clear_breeze", "drizzle", "cloudy"], ["calm", "tired", "lonely"], ["comfort", "calm_down", "rest"]),
+    ("s65", "Superstition", "Stevie Wonder", ["soul"], ["morning", "afternoon"], ["sunny", "clear_breeze"], ["happy", "excited", "drowsy"], ["energize", "excited_up", "refresh"]),
+    ("s66", "What's Going On", "Marvin Gaye", ["soul"], ["sunset", "night"], ["cloudy", "rainy", "windy"], ["sad", "stressed", "focused"], ["comfort", "reflective", "calm_down"]),
+    ("s67", "Valerie", "Amy Winehouse", ["soul"], ["afternoon", "sunset", "night"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "frustrated", "tired"], ["excited_up", "refresh", "energize"]),
+    ("s68", "Stay With Me", "Miki Matsubara", ["citypop"], ["sunset", "night", "late_night"], ["rainy", "clear_breeze", "windy"], ["lonely", "drowsy", "calm"], ["reflective", "refresh", "comfort"]),
+    ("s69", "4:00 A.M.", "Taeko Onuki", ["citypop"], ["night", "late_night"], ["foggy", "rainy", "cloudy"], ["lonely", "tired", "calm"], ["calm_down", "reflective", "sleep"]),
+    ("s70", "Midnight Pretenders", "Tomoko Aran", ["citypop"], ["night", "late_night"], ["clear_breeze", "cloudy", "rainy"], ["drowsy", "lonely", "focused"], ["reflective", "rest", "calm_down"]),
+    ("s71", "Feather", "Nujabes", ["lofi"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["focused", "calm", "happy"], ["focus", "refresh", "calm_down"]),
+    ("s72", "I'm Closing My Eyes", "potsu", ["lofi"], ["night", "late_night"], ["rainy", "drizzle", "snowy"], ["tired", "drowsy", "sad"], ["sleep", "rest", "calm_down"]),
+    ("s73", "Snowfall", "Øneheart & reidenshi", ["lofi"], ["early_morning", "night", "late_night"], ["snowy", "foggy", "rainy"], ["lonely", "tired", "focused"], ["sleep", "focus", "calm_down"]),
+    ("s74", "Better Together", "Jack Johnson", ["acoustic"], ["early_morning", "morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy"], ["calm", "happy", "drowsy"], ["rest", "comfort", "refresh"]),
+    ("s75", "Gravity", "John Mayer", ["acoustic"], ["sunset", "night", "late_night"], ["rainy", "cloudy", "foggy"], ["sad", "stressed", "tired"], ["reflective", "comfort", "calm_down"]),
+    ("s76", "Photograph", "Ed Sheeran", ["acoustic"], ["sunset", "night"], ["snowy", "cloudy", "clear_breeze"], ["lonely", "sad", "calm"], ["comfort", "reflective", "rest"]),
+    ("s77", "별 보러 가자", "적재", ["acoustic", "kpop"], ["night", "late_night", "sunset"], ["clear_breeze", "sunny", "partly_cloudy"], ["calm", "excited", "lonely"], ["comfort", "rest", "calm_down"]),
+    ("s78", "Nuvole Bianche", "Ludovico Einaudi", ["ambient"], ["early_morning", "night", "late_night"], ["snowy", "rainy", "foggy", "cloudy"], ["focused", "sad", "calm"], ["focus", "sleep", "calm_down", "reflective"]),
+    ("s79", "On the Nature of Daylight", "Max Richter", ["ambient"], ["sunset", "night", "late_night"], ["rainy", "cloudy", "foggy"], ["sad", "lonely", "focused"], ["reflective", "comfort", "calm_down"]),
+    ("s80", "Autumn Leaves", "Chet Baker", ["jazz"], ["sunset", "night"], ["windy", "cloudy", "rainy"], ["calm", "lonely", "drowsy"], ["calm_down", "rest", "reflective"]),
+    ("s81", "From The Start", "Laufey", ["jazz"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["excited", "happy", "calm"], ["refresh", "excited_up", "comfort"]),
+    ("s82", "Sunflower", "Post Malone & Swae Lee", ["hiphop"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "excited", "tired"], ["energize", "refresh", "excited_up"]),
+    ("s83", "See You Again", "Tyler, The Creator (feat. Kali Uchis)", ["hiphop"], ["afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["excited", "happy", "drowsy"], ["refresh", "reflective", "comfort"]),
+    ("s84", "bad", "wave to earth", ["indie"], ["afternoon", "sunset", "night"], ["clear_breeze", "partly_cloudy", "drizzle"], ["calm", "drowsy", "happy"], ["calm_down", "rest", "refresh"]),
 ]
 
 
@@ -243,12 +488,15 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
         if taste_tags:
             queries.append((f'tag:"{random.choice(taste_tags)}"', random.randint(0, 120)))
     if genre == "classical":
-        composers = ["Johann Sebastian Bach", "Antonio Vivaldi", "George Frideric Handel", "Domenico Scarlatti", "Henry Purcell", "Arcangelo Corelli", "Georg Philipp Telemann", "Jean-Philippe Rameau", "Claudio Monteverdi", "Tomaso Albinoni", "Wolfgang Amadeus Mozart", "Ludwig van Beethoven", "Joseph Haydn", "Christoph Willibald Gluck", "Muzio Clementi", "Luigi Boccherini", "Frédéric Chopin", "Franz Schubert", "Robert Schumann", "Clara Schumann", "Franz Liszt", "Johannes Brahms", "Felix Mendelssohn", "Pyotr Ilyich Tchaikovsky", "Sergei Rachmaninoff", "Alexander Scriabin", "Bedřich Smetana", "Antonín Dvořák", "Richard Strauss", "Johann Strauss", "Gustav Mahler", "Hector Berlioz", "Georges Bizet", "Camille Saint-Saëns", "Gabriel Fauré", "César Franck", "Edvard Grieg", "Jean Sibelius", "Edward Elgar", "Niccolò Paganini", "Modest Mussorgsky", "Nikolai Rimsky-Korsakov", "Alexander Borodin", "Gioachino Rossini", "Giuseppe Verdi", "Giacomo Puccini", "Richard Wagner", "Anton Bruckner", "Max Bruch", "Pablo de Sarasate", "Henryk Wieniawski", "Isaac Albéniz", "Enrique Granados", "Claude Debussy", "Maurice Ravel", "Erik Satie", "Igor Stravinsky", "Sergei Prokofiev", "Dmitri Shostakovich", "Béla Bartók", "Gustav Holst", "Ralph Vaughan Williams", "Ottorino Respighi", "Manuel de Falla", "Samuel Barber", "Aaron Copland"]
-        for comp in random.sample(composers, 4):
-            queries.append((f'artist:"{comp}"', random.randint(0, 40)))
+        ctags = random.sample(GENRE_TO_MB_TAGS["classical"], 2)
+        for ct in ctags:
+            queries.append((f'tag:"{ct}" AND status:official', random.randint(0, 2500)))
     else:
         chosen_tag = random.choice(tags)
-        queries.append((f'tag:"{chosen_tag}"', random.randint(0, 180)))
+        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 2000)))
+        pool = GENRE_ARTISTS.get(genre) if (genre != "all" and genre in GENRE_ARTISTS) else [a for lst in GENRE_ARTISTS.values() for a in lst]
+        for art in random.sample(pool, min(2, len(pool))):
+            queries.append((f'artist:"{art}"', random.randint(0, 25)))
 
     recordings = []
     try:
@@ -281,6 +529,8 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
         credits = r.get("artist-credit") or []
         artist = "".join((c.get("name") or (c.get("artist") or {}).get("name") or "") + (c.get("joinphrase") or "") for c in credits).strip()
         if not title or not artist or artist == "[unknown]":
+            continue
+        if genre == "classical" and CLASSICAL_EXCLUDE_RE.search(f"{title} {artist}"):
             continue
         mb_id = f"mb_{r['id']}"
         genres = [genre] if genre != "all" else [chosen_tag]
@@ -319,7 +569,7 @@ async def recommend(req: RecommendRequest):
         if req.genre == "classical":
             if CLASSICAL_EXCLUDE_RE.search(f"{r['title']} {r['artist']}"):
                 continue
-            if not CLASSICAL_COMPOSER_WHITELIST_RE.search(r['artist']):
+            if r["source"] != "musicbrainz" and not CLASSICAL_COMPOSER_WHITELIST_RE.search(r['artist']):
                 continue
         score = 0.0
         if req.timeOfDay in json.loads(r["times"]):
@@ -353,7 +603,7 @@ async def recommend(req: RecommendRequest):
     seen_artists = set()
     for c in top_pool:
         ak = c["artist"].lower()
-        if req.genre == "classical" and ak in seen_artists:
+        if ak in seen_artists:
             continue
         seen_artists.add(ak)
         picked.append(c)
