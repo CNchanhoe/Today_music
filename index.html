@@ -626,9 +626,12 @@
 
     const CLASSICAL_EXCLUDE_RE = /yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가/i;
 
+    const CLASSICAL_COMPOSER_WHITELIST_RE = /albeniz|albinoni|albéniz|bach|barber|bartok|bartók|beethoven|berlioz|bizet|boccherini|borodin|brahms|bruch|bruckner|chopin|clementi|copland|corelli|debussy|dvorak|dvořák|elgar|falla|faure|fauré|franck|gluck|granados|grieg|handel|haydn|holst|liszt|mahler|mendelssohn|monteverdi|mozart|mussorgsky|paganini|prokofiev|puccini|purcell|rachmaninoff|rameau|ravel|respighi|rimsky-korsakov|rossini|saint-saens|saint-saëns|sarasate|satie|scarlatti|schubert|schumann|scriabin|shostakovich|sibelius|smetana|strauss|stravinsky|tchaikovsky|telemann|vaughan williams|verdi|vivaldi|wagner|wieniawski/i;
+
     function isAllowedForGenre(song) {
       if (state.genre !== 'classical') return true;
-      return !CLASSICAL_EXCLUDE_RE.test(`${song.title} ${song.artist}`);
+      if (CLASSICAL_EXCLUDE_RE.test(`${song.title} ${song.artist}`)) return false;
+      return CLASSICAL_COMPOSER_WHITELIST_RE.test(song.artist || '');
     }
 
     async function queryMusicBrainzRecordings(queryStr, limit = 15, maxOffset = 150) {
@@ -704,13 +707,7 @@
 
       let baseTracks = [];
       if (state.genre === 'classical') {
-        const composers = [
-          'Johann Sebastian Bach', 'Alexander Scriabin', 'Bedřich Smetana', 'Richard Strauss',
-          'Johann Strauss', 'Ludwig van Beethoven', 'Wolfgang Amadeus Mozart', 'Frédéric Chopin',
-          'Claude Debussy', 'Pyotr Ilyich Tchaikovsky', 'Johannes Brahms', 'Sergei Rachmaninoff',
-          'Franz Schubert', 'Antonio Vivaldi', 'Maurice Ravel', 'Gustav Mahler', 'Antonín Dvořák',
-          'Franz Liszt', 'Felix Mendelssohn', 'Edward Elgar', 'Camille Saint-Saëns'
-        ];
+        const composers = ['Johann Sebastian Bach', 'Antonio Vivaldi', 'George Frideric Handel', 'Domenico Scarlatti', 'Henry Purcell', 'Arcangelo Corelli', 'Georg Philipp Telemann', 'Jean-Philippe Rameau', 'Claudio Monteverdi', 'Tomaso Albinoni', 'Wolfgang Amadeus Mozart', 'Ludwig van Beethoven', 'Joseph Haydn', 'Christoph Willibald Gluck', 'Muzio Clementi', 'Luigi Boccherini', 'Frédéric Chopin', 'Franz Schubert', 'Robert Schumann', 'Clara Schumann', 'Franz Liszt', 'Johannes Brahms', 'Felix Mendelssohn', 'Pyotr Ilyich Tchaikovsky', 'Sergei Rachmaninoff', 'Alexander Scriabin', 'Bedřich Smetana', 'Antonín Dvořák', 'Richard Strauss', 'Johann Strauss', 'Gustav Mahler', 'Hector Berlioz', 'Georges Bizet', 'Camille Saint-Saëns', 'Gabriel Fauré', 'César Franck', 'Edvard Grieg', 'Jean Sibelius', 'Edward Elgar', 'Niccolò Paganini', 'Modest Mussorgsky', 'Nikolai Rimsky-Korsakov', 'Alexander Borodin', 'Gioachino Rossini', 'Giuseppe Verdi', 'Giacomo Puccini', 'Richard Wagner', 'Anton Bruckner', 'Max Bruch', 'Pablo de Sarasate', 'Henryk Wieniawski', 'Isaac Albéniz', 'Enrique Granados', 'Claude Debussy', 'Maurice Ravel', 'Erik Satie', 'Igor Stravinsky', 'Sergei Prokofiev', 'Dmitri Shostakovich', 'Béla Bartók', 'Gustav Holst', 'Ralph Vaughan Williams', 'Ottorino Respighi', 'Manuel de Falla', 'Samuel Barber', 'Aaron Copland'];
         for (let i = composers.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [composers[i], composers[j]] = [composers[j], composers[i]];

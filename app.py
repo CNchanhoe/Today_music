@@ -1,4 +1,5 @@
 import json
+import re
 import random
 import sqlite3
 from datetime import datetime
@@ -11,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "music.db"
-FRONTEND_PATH = BASE_DIR / "index.html"
+BASE_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = BASE_DIR / "backend" / "music.db"
+FRONTEND_PATH = BASE_DIR / "frontend" / "index.html"
 
 app = FastAPI(title="오늘의 음악 API")
 app.add_middleware(
@@ -22,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+CLASSICAL_COMPOSER_WHITELIST_RE = re.compile(r"albeniz|albinoni|albéniz|bach|barber|bartok|bartók|beethoven|berlioz|bizet|boccherini|borodin|brahms|bruch|bruckner|chopin|clementi|copland|corelli|debussy|dvorak|dvořák|elgar|falla|faure|fauré|franck|gluck|granados|grieg|handel|haydn|holst|liszt|mahler|mendelssohn|monteverdi|mozart|mussorgsky|paganini|prokofiev|puccini|purcell|rachmaninoff|rameau|ravel|respighi|rimsky-korsakov|rossini|saint-saens|saint-saëns|sarasate|satie|scarlatti|schubert|schumann|scriabin|shostakovich|sibelius|smetana|strauss|stravinsky|tchaikovsky|telemann|vaughan williams|verdi|vivaldi|wagner|wieniawski", re.I)
+CLASSICAL_EXCLUDE_RE = re.compile(r"yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가", re.I)
 
 GENRE_TO_MB_TAGS = {
     "pop": ["pop", "synthpop", "dance pop"],
@@ -32,7 +36,7 @@ GENRE_TO_MB_TAGS = {
     "rock": ["rock", "alternative rock", "modern rock"],
     "hiphop": ["hip hop", "rap", "boom bap"],
     "jazz": ["jazz", "smooth jazz", "bossa nova"],
-    "classical": ["classical", "piano", "orchestral"],
+    "classical": ["symphony", "concerto", "sonata", "violin concerto", "cello", "chamber music", "baroque", "classical"],
     "lofi": ["lo-fi", "chillhop", "instrumental"],
     "ambient": ["ambient", "chillout", "dream pop"],
     "citypop": ["city pop", "japanese pop", "disco"],
@@ -56,9 +60,9 @@ SEED_SONGS = [
     ("s14", "Pink + White", "Frank Ocean", ["rnb", "hiphop"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["calm", "happy", "drowsy", "excited"], ["refresh", "rest", "reflective"]),
     ("s15", "Cruel Summer", "Taylor Swift", ["pop"], ["afternoon", "sunset"], ["sunny", "clear_breeze", "windy"], ["happy", "excited", "frustrated", "stressed"], ["excited_up", "energize", "refresh"]),
     ("s16", "Don't Stop Me Now", "Queen", ["rock", "pop"], ["early_morning", "morning", "afternoon"], ["sunny", "windy", "partly_cloudy"], ["happy", "tired", "stressed", "frustrated"], ["energize", "excited_up", "confident"]),
-    ("s17", "Merry Christmas Mr. Lawrence", "Ryuichi Sakamoto", ["classical", "ambient"], ["early_morning", "night", "late_night"], ["snowy", "foggy", "cloudy"], ["focused", "calm", "lonely", "sad"], ["focus", "sleep", "calm_down", "reflective"]),
+    ("s17", "Merry Christmas Mr. Lawrence", "Ryuichi Sakamoto", ["ambient"], ["early_morning", "night", "late_night"], ["snowy", "foggy", "cloudy"], ["focused", "calm", "lonely", "sad"], ["focus", "sleep", "calm_down", "reflective"]),
     ("s18", "Matsuri", "Fujii Kaze", ["citypop", "pop"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "windy"], ["stressed", "frustrated", "happy", "drowsy"], ["refresh", "excited_up", "energize"]),
-    ("s19", "River Flows in You", "이루마 (Yiruma)", ["classical", "ambient"], ["early_morning", "night", "late_night"], ["rainy", "snowy", "drizzle", "foggy"], ["focused", "tired", "calm", "sad"], ["focus", "sleep", "rest", "calm_down"]),
+    ("s19", "River Flows in You", "이루마 (Yiruma)", ["ambient"], ["early_morning", "night", "late_night"], ["rainy", "snowy", "drizzle", "foggy"], ["focused", "tired", "calm", "sad"], ["focus", "sleep", "rest", "calm_down"]),
     ("s20", "비 오는 날 듣기 좋은 노래 (Feat. Colde)", "에픽하이 (EPIK HIGH)", ["kpop", "hiphop"], ["afternoon", "sunset", "night"], ["rainy", "drizzle", "cloudy", "foggy"], ["sad", "lonely", "tired", "calm"], ["comfort", "calm_down", "reflective"]),
     ("s21", "비도 오고 그래서 (Feat. 신용재)", "헤이즈 (Heize)", ["kpop", "rnb"], ["sunset", "night", "late_night"], ["rainy", "stormy", "drizzle"], ["sad", "lonely", "tired"], ["comfort", "reflective", "calm_down"]),
     ("s22", "한 페이지가 될 수 있게", "데이식스 (DAY6)", ["kpop", "rock"], ["early_morning", "morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy", "windy"], ["happy", "excited", "tired", "stressed"], ["energize", "excited_up", "refresh", "confident"]),
@@ -82,7 +86,7 @@ SEED_SONGS = [
     ("s40", "봄날", "방탄소년단 (BTS)", ["kpop", "hiphop"], ["early_morning", "sunset", "night"], ["snowy", "cloudy", "windy"], ["sad", "lonely", "tired"], ["comfort", "refresh", "confident"]),
     ("s41", "Nocturne Op.9 No.2", "Frédéric Chopin", ["classical"], ["early_morning", "night", "late_night"], ["rainy", "snowy", "foggy", "cloudy"], ["calm", "lonely", "sad", "focused"], ["sleep", "calm_down", "focus", "rest"]),
     ("s42", "Gymnopédie No.1", "Erik Satie", ["classical", "ambient"], ["early_morning", "afternoon", "late_night"], ["drizzle", "rainy", "foggy", "snowy"], ["tired", "calm", "drowsy", "focused"], ["rest", "sleep", "calm_down", "focus"]),
-    ("s43", "Summer", "Joe Hisaishi", ["classical"], ["morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "excited", "calm"], ["refresh", "comfort", "energize"]),
+    ("s43", "Summer", "Joe Hisaishi", ["ambient", "lofi"], ["morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "excited", "calm"], ["refresh", "comfort", "energize"]),
     ("s44", "Ride on Time", "Tatsuro Yamashita", ["citypop"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "windy"], ["happy", "excited", "tired"], ["energize", "excited_up", "refresh"]),
     ("s45", "Remember Summer Days", "Anri", ["citypop"], ["afternoon", "sunset", "night"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "drowsy", "calm"], ["refresh", "excited_up", "reflective"]),
     ("s46", "Aruarian Dance", "Nujabes", ["lofi", "hiphop"], ["afternoon", "night", "late_night"], ["rainy", "cloudy", "clear_breeze"], ["focused", "calm", "tired"], ["focus", "calm_down", "rest"]),
@@ -90,6 +94,20 @@ SEED_SONGS = [
     ("s48", "Controlla", "Idealism", ["lofi", "ambient"], ["night", "late_night"], ["rainy", "foggy", "snowy"], ["lonely", "tired", "focused"], ["sleep", "calm_down", "focus"]),
     ("s49", "Luv(sic) pt.3 (feat. Shing02)", "Nujabes", ["hiphop", "lofi"], ["sunset", "night", "late_night"], ["rainy", "cloudy", "windy"], ["lonely", "calm", "focused"], ["reflective", "comfort", "focus"]),
     ("s50", "I'm Yours", "Jason Mraz", ["acoustic"], ["morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "calm", "stressed"], ["refresh", "comfort", "rest"]),
+    ("s51", "Cello Suite No.1 in G Major, BWV 1007: I. Prélude", "Johann Sebastian Bach", ["classical"], ["early_morning", "morning", "afternoon", "night"], ["sunny", "clear_breeze", "cloudy", "rainy"], ["calm", "focused", "tired"], ["focus", "calm_down", "rest"]),
+    ("s52", "Piano Sonata No.14 'Moonlight': I. Adagio sostenuto", "Ludwig van Beethoven", ["classical"], ["night", "late_night", "sunset"], ["rainy", "snowy", "foggy", "cloudy"], ["sad", "lonely", "focused", "calm"], ["reflective", "sleep", "calm_down", "focus"]),
+    ("s53", "The Four Seasons: Spring, Op.8 No.1: I. Allegro", "Antonio Vivaldi", ["classical"], ["early_morning", "morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "excited", "drowsy"], ["energize", "refresh", "excited_up"]),
+    ("s54", "Liebestraum No.3 in A-Flat Major, S.541", "Franz Liszt", ["classical"], ["sunset", "night", "late_night"], ["clear_breeze", "rainy", "snowy", "cloudy"], ["calm", "lonely", "sad", "excited"], ["comfort", "reflective", "rest"]),
+    ("s55", "Pavane pour une infante défunte", "Maurice Ravel", ["classical"], ["early_morning", "sunset", "late_night"], ["drizzle", "foggy", "rainy", "snowy"], ["tired", "calm", "drowsy", "sad"], ["calm_down", "sleep", "rest", "comfort"]),
+    ("s56", "Swan Lake, Op.20: Scene (Moderato)", "Pyotr Ilyich Tchaikovsky", ["classical"], ["sunset", "night"], ["snowy", "windy", "cloudy", "stormy"], ["stressed", "frustrated", "sad", "focused"], ["reflective", "confident", "comfort"]),
+    ("s57", "Piano Concerto No.21 in C Major, K.467: II. Andante", "Wolfgang Amadeus Mozart", ["classical"], ["early_morning", "morning", "afternoon"], ["sunny", "clear_breeze", "partly_cloudy"], ["calm", "happy", "focused"], ["calm_down", "focus", "rest", "comfort"]),
+    ("s58", "Violin Concerto in E Minor, Op.64: I. Allegro molto appassionato", "Felix Mendelssohn", ["classical"], ["morning", "afternoon", "sunset"], ["windy", "clear_breeze", "cloudy"], ["excited", "stressed", "focused"], ["energize", "confident", "reflective"]),
+    ("s59", "Cello Concerto in E Minor, Op.85: I. Adagio - Moderato", "Edward Elgar", ["classical"], ["sunset", "night", "late_night"], ["rainy", "foggy", "cloudy", "windy"], ["sad", "lonely", "tired"], ["reflective", "comfort", "calm_down"]),
+    ("s60", "Symphony No.9 'From the New World': II. Largo", "Antonín Dvořák", ["classical"], ["early_morning", "sunset", "night"], ["cloudy", "clear_breeze", "snowy"], ["tired", "calm", "lonely"], ["comfort", "rest", "reflective"]),
+    ("s61", "Étude in C-Sharp Minor, Op.2 No.1", "Alexander Scriabin", ["classical"], ["night", "late_night", "sunset"], ["rainy", "snowy", "foggy", "cloudy"], ["sad", "lonely", "focused"], ["reflective", "comfort", "calm_down"]),
+    ("s62", "Má vlast: Vltava (The Moldau)", "Bedřich Smetana", ["classical"], ["early_morning", "morning", "afternoon"], ["sunny", "clear_breeze", "windy"], ["calm", "excited", "happy"], ["refresh", "energize", "reflective"]),
+    ("s63", "An der schönen blauen Donau (The Blue Danube), Op.314", "Johann Strauss II", ["classical"], ["morning", "afternoon", "sunset"], ["sunny", "clear_breeze", "partly_cloudy"], ["happy", "excited", "drowsy"], ["excited_up", "refresh", "energize"]),
+    ("s64", "Morgen!, Op.27 No.4 (Orchestral Version)", "Richard Strauss", ["classical"], ["early_morning", "sunset", "night"], ["clear_breeze", "drizzle", "cloudy"], ["calm", "tired", "lonely"], ["comfort", "calm_down", "rest"]),
 ]
 
 
@@ -148,7 +166,7 @@ def init_db():
     for row in SEED_SONGS:
         cur.execute(
             """
-            INSERT OR IGNORE INTO songs
+            INSERT OR REPLACE INTO songs
             (id, title, artist, genres, times, weathers, current_moods, target_moods, source)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'seed')
             """,
@@ -175,6 +193,7 @@ class RecommendRequest(BaseModel):
     targetMood: str
     genre: str = "all"
     excludeIds: List[str] = []
+    favArtists: List[str] = []
 
 
 class SaveRecordRequest(BaseModel):
@@ -193,19 +212,60 @@ class SaveRecordRequest(BaseModel):
     artist: str
 
 
-async def sync_musicbrainz_into_db(genre: str) -> int:
+async def fetch_artist_tags(name: str) -> List[str]:
+    try:
+        async with httpx.AsyncClient(timeout=2.5, headers={"User-Agent": "TodaysMusicApp/1.0 (https://example.com)"}) as client:
+            res = await client.get("https://musicbrainz.org/ws/2/artist/", params={"query": name, "limit": 1, "fmt": "json"})
+            if res.status_code != 200:
+                return []
+            artists = res.json().get("artists") or []
+            if not artists:
+                return []
+            tags = sorted(artists[0].get("tags") or [], key=lambda t: t.get("count", 0), reverse=True)
+            return [t["name"] for t in tags[:4] if t.get("name")]
+    except Exception:
+        return []
+
+
+async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
     tags = GENRE_TO_MB_TAGS.get(genre, ["pop", "indie", "jazz"]) if genre != "all" else ["pop", "indie", "jazz", "rnb", "classical"]
-    chosen_tag = random.choice(tags)
-    offset = random.randint(0, 200)
-    url = f"https://musicbrainz.org/ws/2/recording/?query=tag:%22{chosen_tag}%22&limit=20&offset={offset}&fmt=json"
+    queries = []
+    if fav_artists and genre != "classical":
+        pick_fav = random.choice(fav_artists)
+        queries.append((f'artist:"{pick_fav}"', random.randint(0, 20)))
+        taste_tags = await fetch_artist_tags(pick_fav)
+        if taste_tags:
+            queries.append((f'tag:"{random.choice(taste_tags)}"', random.randint(0, 120)))
+    if genre == "classical":
+        composers = ["Johann Sebastian Bach", "Antonio Vivaldi", "George Frideric Handel", "Domenico Scarlatti", "Henry Purcell", "Arcangelo Corelli", "Georg Philipp Telemann", "Jean-Philippe Rameau", "Claudio Monteverdi", "Tomaso Albinoni", "Wolfgang Amadeus Mozart", "Ludwig van Beethoven", "Joseph Haydn", "Christoph Willibald Gluck", "Muzio Clementi", "Luigi Boccherini", "Frédéric Chopin", "Franz Schubert", "Robert Schumann", "Clara Schumann", "Franz Liszt", "Johannes Brahms", "Felix Mendelssohn", "Pyotr Ilyich Tchaikovsky", "Sergei Rachmaninoff", "Alexander Scriabin", "Bedřich Smetana", "Antonín Dvořák", "Richard Strauss", "Johann Strauss", "Gustav Mahler", "Hector Berlioz", "Georges Bizet", "Camille Saint-Saëns", "Gabriel Fauré", "César Franck", "Edvard Grieg", "Jean Sibelius", "Edward Elgar", "Niccolò Paganini", "Modest Mussorgsky", "Nikolai Rimsky-Korsakov", "Alexander Borodin", "Gioachino Rossini", "Giuseppe Verdi", "Giacomo Puccini", "Richard Wagner", "Anton Bruckner", "Max Bruch", "Pablo de Sarasate", "Henryk Wieniawski", "Isaac Albéniz", "Enrique Granados", "Claude Debussy", "Maurice Ravel", "Erik Satie", "Igor Stravinsky", "Sergei Prokofiev", "Dmitri Shostakovich", "Béla Bartók", "Gustav Holst", "Ralph Vaughan Williams", "Ottorino Respighi", "Manuel de Falla", "Samuel Barber", "Aaron Copland"]
+        for comp in random.sample(composers, 4):
+            queries.append((f'artist:"{comp}"', random.randint(0, 40)))
+    else:
+        chosen_tag = random.choice(tags)
+        queries.append((f'tag:"{chosen_tag}"', random.randint(0, 180)))
+
+    recordings = []
     try:
         async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": "TodaysMusicApp/1.0 (https://example.com)"}) as client:
-            res = await client.get(url)
-            if res.status_code != 200:
-                return 0
-            data = res.json()
+            for q_str, off in queries:
+                res = await client.get("https://musicbrainz.org/ws/2/recording/", params={"query": q_str, "limit": 15, "offset": off, "fmt": "json"})
+                if res.status_code == 200:
+                    items = res.json().get("recordings", [])
+                    if q_str.startswith('artist:"'):
+                        last_name = q_str[8:-1].strip().split()[-1].lower()
+                        filtered_items = []
+                        for it in items:
+                            ac = "".join((c.get("name") or (c.get("artist") or {}).get("name") or "") for c in (it.get("artist-credit") or [])).lower()
+                            if last_name in ac:
+                                filtered_items.append(it)
+                        recordings.extend(filtered_items)
+                    else:
+                        recordings.extend(items)
     except Exception:
+        pass
+    if not recordings:
         return 0
+    data = {"recordings": recordings}
 
     conn = get_conn()
     cur = conn.cursor()
@@ -235,7 +295,7 @@ async def sync_musicbrainz_into_db(genre: str) -> int:
 
 @app.post("/api/recommend")
 async def recommend(req: RecommendRequest):
-    await sync_musicbrainz_into_db(req.genre)
+    await sync_musicbrainz_into_db(req.genre, req.favArtists)
 
     conn = get_conn()
     cur = conn.cursor()
@@ -250,6 +310,11 @@ async def recommend(req: RecommendRequest):
         genres = json.loads(r["genres"])
         if req.genre != "all" and req.genre not in genres:
             continue
+        if req.genre == "classical":
+            if CLASSICAL_EXCLUDE_RE.search(f"{r['title']} {r['artist']}"):
+                continue
+            if not CLASSICAL_COMPOSER_WHITELIST_RE.search(r['artist']):
+                continue
         score = 0.0
         if req.timeOfDay in json.loads(r["times"]):
             score += 2.5
@@ -261,6 +326,10 @@ async def recommend(req: RecommendRequest):
             score += 3.5
         if r["source"] == "musicbrainz":
             score += 2.0
+        if req.favArtists:
+            hay = f"{r['artist']} {r['title']}".lower()
+            if any(f.lower() in hay for f in req.favArtists):
+                score += 4.0
 
         penalty = 0.0
         if r["id"] in req.excludeIds:
@@ -272,9 +341,18 @@ async def recommend(req: RecommendRequest):
         candidates.append((total, {"id": r["id"], "title": r["title"], "artist": r["artist"]}))
 
     candidates.sort(key=lambda x: x[0], reverse=True)
-    top_pool = [c[1] for c in candidates[:10]]
+    top_pool = [c[1] for c in candidates[:20]]
     random.shuffle(top_pool)
-    picked = top_pool[:4]
+    picked = []
+    seen_artists = set()
+    for c in top_pool:
+        ak = c["artist"].lower()
+        if req.genre == "classical" and ak in seen_artists:
+            continue
+        seen_artists.add(ak)
+        picked.append(c)
+        if len(picked) >= 4:
+            break
 
     now = datetime.utcnow().isoformat()
     for p in picked:
