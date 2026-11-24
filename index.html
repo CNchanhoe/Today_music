@@ -225,7 +225,7 @@
         </div>
 
         <div class="flex justify-center">
-          <canvas id="share-card-canvas" width="540" height="760" class="w-full max-w-[270px] rounded-2xl shadow-lg border border-slate-100"></canvas>
+          <canvas id="share-card-canvas" width="540" height="728" class="w-full max-w-[270px] rounded-2xl shadow-lg border border-slate-100"></canvas>
         </div>
       </div>
 
@@ -1153,34 +1153,9 @@
       ctx.textAlign = 'left';
       ctx.fillText(formatToday(), 56, 78);
 
-      // Selected chips text
-      const timeObj = TIMES.find(t => t.id === state.timeOfDay);
-      const wObj = WEATHERS.find(w => w.id === state.weather);
-      const cObj = CURRENT_MOODS.find(m => m.id === state.currentMood);
-      const tObj = TARGET_MOODS.find(t => t.id === state.targetMood);
-      const gObj = GENRES.find(g => g.id === state.genre);
-      const stickerKeys = [timeObj.sticker, wObj.sticker, cObj.sticker, 'ARROW', tObj.sticker];
-      if (gObj && gObj.id !== 'all') stickerKeys.push(gObj.sticker);
-      let sx = 56;
-      const sy = 92;
-      const sSize = 34;
-      for (const sk of stickerKeys) {
-        if (sk === 'ARROW') {
-          ctx.fillStyle = '#64748b';
-          ctx.font = '700 18px Inter, sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText('→', sx + 2, sy + 23);
-          sx += 26;
-        } else {
-          const sImg = await loadCorsImage(STICKERS[sk]);
-          if (sImg) ctx.drawImage(sImg, sx, sy, sSize, sSize);
-          sx += sSize + 8;
-        }
-      }
-
       // Album cover box
       const coverX = 65;
-      const coverY = 148;
+      const coverY = 116;
       const coverSize = W - 130;
 
       // Draw fallback cover first
