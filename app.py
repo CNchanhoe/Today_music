@@ -494,10 +494,8 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
             queries.append((f'tag:"{ct}" AND status:official {neg}', random.randint(0, 2000)))
     else:
         chosen_tag = random.choice(tags)
-        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 2000)))
-        pool = GENRE_ARTISTS.get(genre) if (genre != "all" and genre in GENRE_ARTISTS) else [a for lst in GENRE_ARTISTS.values() for a in lst]
-        for art in random.sample(pool, min(2, len(pool))):
-            queries.append((f'artist:"{art}"', random.randint(0, 25)))
+        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 1500)))
+        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 120)))
 
     recordings = []
     try:
@@ -560,7 +558,7 @@ async def recommend(req: RecommendRequest):
 
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT song_id FROM recent_history ORDER BY shown_at DESC LIMIT 16")
+    cur.execute("SELECT song_id FROM recent_history ORDER BY shown_at DESC LIMIT 100")
     recent_ids = {r["song_id"] for r in cur.fetchall()}
 
     cur.execute("SELECT * FROM songs")
@@ -596,7 +594,7 @@ async def recommend(req: RecommendRequest):
         if r["id"] in req.excludeIds:
             penalty -= 200.0
         elif r["id"] in recent_ids:
-            penalty -= 40.0
+            penalty -= 180.0
 
         total = score + penalty + random.uniform(0.0, 4.5)
         candidates.append((total, {"id": r["id"], "title": r["title"], "artist": r["artist"]}))

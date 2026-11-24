@@ -729,7 +729,8 @@
       selectedCardSongId: null,
       recentSongIds: [],
       savedRecords: [],
-      favArtists: []
+      favArtists: [],
+      rerollDepth: 0
     };
 
     try {
@@ -968,8 +969,8 @@
         }
         const neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"';
         const [t1, t2] = await Promise.all([
-          queryMusicBrainzRecordings(`tag:"${classicalTags[0]}" AND status:official ${neg}`, 15, 2000, true),
-          queryMusicBrainzRecordings(`tag:"${classicalTags[1]}" AND status:official ${neg}`, 15, 2000, true)
+          queryMusicBrainzRecordings(`tag:"${classicalTags[0]}" AND status:official ${neg}`, 15, Math.min(4000, 600 + state.rerollDepth * 600), true),
+          queryMusicBrainzRecordings(`tag:"${classicalTags[1]}" AND status:official ${neg}`, 15, Math.min(4000, 600 + state.rerollDepth * 600), true)
         ]);
         baseTracks = [...t1, ...t2];
         for (let i = baseTracks.length - 1; i > 0; i--) {
@@ -977,30 +978,15 @@
           [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
         }
       } else {
-        // Hybrid: 1-2 from famous artists + 2-3 from full MusicBrainz DB (status:official)
+        // Pure full MusicBrainz DB exploration (status:official) with genre + mood intersection
         const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
         const chosenTag = basePool[Math.floor(Math.random() * basePool.length)];
-        const artistPool = (state.genre !== 'all' && GENRE_ARTISTS[state.genre])
-          ? [...GENRE_ARTISTS[state.genre]]
-          : Object.values(GENRE_ARTISTS).flat();
-        for (let i = artistPool.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [artistPool[i], artistPool[j]] = [artistPool[j], artistPool[i]];
-        }
-        const pickedArtists = artistPool.slice(0, 2);
-
-        const [a1, a2, globalTracks] = await Promise.all([
-          queryMusicBrainzRecordings(`artist:"${pickedArtists[0]}"`, 6, 25),
-          queryMusicBrainzRecordings(`artist:"${pickedArtists[1]}"`, 6, 25),
-          queryMusicBrainzRecordings(`tag:"${chosenTag}" AND status:official`, 15, 2000)
+        const maxOff = Math.min(4000, 400 + state.rerollDepth * 600);
+        const [globalTracks, moodTracks] = await Promise.all([
+          queryMusicBrainzRecordings(`tag:"${chosenTag}" AND status:official`, 20, maxOff),
+          queryMusicBrainzRecordings(state.genre !== 'all' ? `tag:"${chosenTag}" AND tag:"${targetTags[0]}" AND status:official` : `tag:"${targetTags[0]}" AND status:official`, 15, Math.min(1200, 150 + state.rerollDepth * 200))
         ]);
-
-        const famousPart = [];
-        if (a1.length) famousPart.push(a1[0]);
-        if (a2.length) famousPart.push(a2[0]);
-
-        // Interleave global official DB tracks + famous artist tracks
-        baseTracks = [...globalTracks.slice(0, 2), ...famousPart, ...globalTracks.slice(2)];
+        baseTracks = [...moodTracks.slice(0, 2), ...globalTracks];
       }
 
       // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
@@ -1173,6 +1159,7 @@
 
       state.currentRecs = picked;
       state.hasRecommended = true;
+      state.rerollDepth += 1;
 
       btn.disabled = false;
       reroll.disabled = false;
