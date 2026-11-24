@@ -11,9 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "backend" / "music.db"
-FRONTEND_PATH = BASE_DIR / "frontend" / "index.html"
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "music.db"
+FRONTEND_PATH = BASE_DIR / "index.html"
 
 app = FastAPI(title="오늘의 음악 API")
 app.add_middleware(
