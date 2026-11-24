@@ -489,19 +489,17 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
             queries.append((f'tag:"{random.choice(taste_tags)}"', random.randint(0, 120)))
     if genre == "classical":
         neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"'
-        ctags = random.sample(GENRE_TO_MB_TAGS["classical"], 2)
-        for ct in ctags:
-            queries.append((f'tag:"{ct}" AND status:official {neg}', random.randint(0, 2000)))
+        ct = random.choice(GENRE_TO_MB_TAGS["classical"])
+        queries.append((f'tag:"{ct}" AND status:official {neg}', random.randint(0, 2500)))
     else:
         chosen_tag = random.choice(tags)
-        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 1500)))
-        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 120)))
+        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 2000)))
 
     recordings = []
     try:
         async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": "TodaysMusicApp/1.0 (https://example.com)"}) as client:
             for q_str, off in queries:
-                res = await client.get("https://musicbrainz.org/ws/2/recording/", params={"query": q_str, "limit": 15, "offset": off, "fmt": "json"})
+                res = await client.get("https://musicbrainz.org/ws/2/recording/", params={"query": q_str, "limit": 100, "offset": off, "fmt": "json"})
                 if res.status_code == 200:
                     items = res.json().get("recordings", [])
                     if q_str.startswith('artist:"'):
@@ -599,8 +597,10 @@ async def recommend(req: RecommendRequest):
         total = score + penalty + random.uniform(0.0, 4.5)
         candidates.append((total, {"id": r["id"], "title": r["title"], "artist": r["artist"]}))
 
-    candidates.sort(key=lambda x: x[0], reverse=True)
-    top_pool = [c[1] for c in candidates[:20]]
+    unseen = [c for c in candidates if c[1]["id"] not in req.excludeIds and c[1]["id"] not in recent_ids]
+    active_candidates = unseen if len(unseen) >= 4 else candidates
+    active_candidates.sort(key=lambda x: x[0], reverse=True)
+    top_pool = [c[1] for c in active_candidates[:25]]
     random.shuffle(top_pool)
     picked = []
     seen_artists = set()

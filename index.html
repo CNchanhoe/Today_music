@@ -963,30 +963,24 @@
       let baseTracks = [];
       if (state.genre === 'classical') {
         const classicalTags = [...GENRE_TO_MB_TAGS.classical];
-        for (let i = classicalTags.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [classicalTags[i], classicalTags[j]] = [classicalTags[j], classicalTags[i]];
-        }
+        const chosenCTag = classicalTags[Math.floor(Math.random() * classicalTags.length)];
         const neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"';
-        const [t1, t2] = await Promise.all([
-          queryMusicBrainzRecordings(`tag:"${classicalTags[0]}" AND status:official ${neg}`, 15, Math.min(4000, 600 + state.rerollDepth * 600), true),
-          queryMusicBrainzRecordings(`tag:"${classicalTags[1]}" AND status:official ${neg}`, 15, Math.min(4000, 600 + state.rerollDepth * 600), true)
-        ]);
-        baseTracks = [...t1, ...t2];
-        for (let i = baseTracks.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
-        }
+        // Single MusicBrainz request (limit=35) avoids 1 req/sec 503 rate-limit!
+        baseTracks = await queryMusicBrainzRecordings(
+          `tag:"${chosenCTag}" AND status:official ${neg}`,
+          100,
+          Math.min(4000, 400 + state.rerollDepth * 500),
+          true
+        );
       } else {
-        // Pure full MusicBrainz DB exploration (status:official) with genre + mood intersection
         const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
         const chosenTag = basePool[Math.floor(Math.random() * basePool.length)];
-        const maxOff = Math.min(4000, 400 + state.rerollDepth * 600);
-        const [globalTracks, moodTracks] = await Promise.all([
-          queryMusicBrainzRecordings(`tag:"${chosenTag}" AND status:official`, 20, maxOff),
-          queryMusicBrainzRecordings(state.genre !== 'all' ? `tag:"${chosenTag}" AND tag:"${targetTags[0]}" AND status:official` : `tag:"${targetTags[0]}" AND status:official`, 15, Math.min(1200, 150 + state.rerollDepth * 200))
-        ]);
-        baseTracks = [...moodTracks.slice(0, 2), ...globalTracks];
+        const maxOff = Math.min(4000, 400 + state.rerollDepth * 500);
+        // Single MusicBrainz request (limit=35) avoids 1 req/sec 503 rate-limit!
+        const qStr = (state.genre !== 'all' && Math.random() < 0.4)
+          ? `tag:"${chosenTag}" AND tag:"${targetTags[0]}" AND status:official`
+          : `tag:"${chosenTag}" AND status:official`;
+        baseTracks = await queryMusicBrainzRecordings(qStr, 100, maxOff);
       }
 
       // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
