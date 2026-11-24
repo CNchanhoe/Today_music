@@ -875,7 +875,7 @@
       }
     }
 
-    const CLASSICAL_EXCLUDE_RE = /yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|clayderman|2cellos|garrett|maksim|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|\bpop\b|synth|electronic|new age|ambient|crossover|cinematic|lofi|lo-fi|avant.?garde|atonal|serialism|twelve.?tone|electroacoustic|musique concrète|microtonal|experimental|noise|cage|stockhausen|xenakis|boulez|penderecki|ligeti|ferneyhough|schoenberg|webern|berg|feldman|berio|nono|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가/i;
+    const CLASSICAL_EXCLUDE_RE = /yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|clayderman|2cellos|garrett|maksim|queen|beatles|coldplay|radiohead|muse|metallica|pink floyd|led zeppelin|oasis|nirvana|linkin park|imagine dragons|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|\bpop\b|synth|electronic|new age|ambient|crossover|cinematic|lofi|lo-fi|avant.?garde|atonal|serialism|twelve.?tone|electroacoustic|musique concrète|microtonal|experimental|noise|cage|stockhausen|xenakis|boulez|penderecki|ligeti|ferneyhough|schoenberg|webern|berg|feldman|berio|nono|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가/i;
 
     const CLASSICAL_COMPOSER_WHITELIST_RE = /albeniz|albinoni|albéniz|bach|barber|bartok|bartók|beethoven|berlioz|bizet|boccherini|borodin|brahms|bruch|bruckner|chopin|clementi|copland|corelli|debussy|dvorak|dvořák|elgar|falla|faure|fauré|franck|gluck|granados|grieg|handel|haydn|holst|liszt|mahler|mendelssohn|monteverdi|mozart|mussorgsky|paganini|prokofiev|puccini|purcell|rachmaninoff|rameau|ravel|respighi|rimsky-korsakov|rossini|saint-saens|saint-saëns|sarasate|satie|scarlatti|schubert|schumann|scriabin|shostakovich|sibelius|smetana|strauss|stravinsky|tchaikovsky|telemann|vaughan williams|verdi|vivaldi|wagner|wieniawski/i;
 
@@ -908,6 +908,8 @@
           const dedupKey = `${title}::${artist}`.toLowerCase();
           if (seen.has(dedupKey) || state.recentSongIds.includes(id)) continue;
           seen.add(dedupKey);
+          const rTags = Array.isArray(r.tags) ? r.tags.map(t => (t.name || '').toLowerCase()) : [];
+          if (strictClassicalTag && rTags.some(t => /rock|pop|metal|jazz|hip hop|electronic|soundtrack|new age|ambient|punk|indie|folk|rnb|soul/.test(t))) continue;
           if (!isAllowedForGenre({ title, artist }, strictClassicalTag)) continue;
           if (queryStr.startsWith('artist:"')) {
             const targetArtist = queryStr.slice(8, -1).trim();
@@ -964,9 +966,10 @@
           const j = Math.floor(Math.random() * (i + 1));
           [classicalTags[i], classicalTags[j]] = [classicalTags[j], classicalTags[i]];
         }
+        const neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"';
         const [t1, t2] = await Promise.all([
-          queryMusicBrainzRecordings(`tag:"${classicalTags[0]}" AND status:official`, 15, 2500, true),
-          queryMusicBrainzRecordings(`tag:"${classicalTags[1]}" AND status:official`, 15, 2500, true)
+          queryMusicBrainzRecordings(`tag:"${classicalTags[0]}" AND status:official ${neg}`, 15, 2000, true),
+          queryMusicBrainzRecordings(`tag:"${classicalTags[1]}" AND status:official ${neg}`, 15, 2000, true)
         ]);
         baseTracks = [...t1, ...t2];
         for (let i = baseTracks.length - 1; i > 0; i--) {

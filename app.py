@@ -31,7 +31,7 @@ app.add_middleware(
 )
 
 CLASSICAL_COMPOSER_WHITELIST_RE = re.compile(r"albeniz|albinoni|albéniz|bach|barber|bartok|bartók|beethoven|berlioz|bizet|boccherini|borodin|brahms|bruch|bruckner|chopin|clementi|copland|corelli|debussy|dvorak|dvořák|elgar|falla|faure|fauré|franck|gluck|granados|grieg|handel|haydn|holst|liszt|mahler|mendelssohn|monteverdi|mozart|mussorgsky|paganini|prokofiev|puccini|purcell|rachmaninoff|rameau|ravel|respighi|rimsky-korsakov|rossini|saint-saens|saint-saëns|sarasate|satie|scarlatti|schubert|schumann|scriabin|shostakovich|sibelius|smetana|strauss|stravinsky|tchaikovsky|telemann|vaughan williams|verdi|vivaldi|wagner|wieniawski", re.I)
-CLASSICAL_EXCLUDE_RE = re.compile(r"yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|clayderman|2cellos|garrett|maksim|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|\bpop\b|synth|electronic|new age|ambient|crossover|cinematic|lofi|lo-fi|avant.?garde|atonal|serialism|twelve.?tone|electroacoustic|musique concrète|microtonal|experimental|noise|cage|stockhausen|xenakis|boulez|penderecki|ligeti|ferneyhough|schoenberg|webern|berg|feldman|berio|nono|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가", re.I)
+CLASSICAL_EXCLUDE_RE = re.compile(r"yiruma|hisaishi|sakamoto|einaudi|richter|tiersen|clayderman|2cellos|garrett|maksim|queen|beatles|coldplay|radiohead|muse|metallica|pink floyd|led zeppelin|oasis|nirvana|linkin park|imagine dragons|soundtrack|\bost\b|anime|game|cover|tribute|karaoke|remix|8-bit|lullaby|medley|jazz|rock|metal|hip.?hop|\bpop\b|synth|electronic|new age|ambient|crossover|cinematic|lofi|lo-fi|avant.?garde|atonal|serialism|twelve.?tone|electroacoustic|musique concrète|microtonal|experimental|noise|cage|stockhausen|xenakis|boulez|penderecki|ligeti|ferneyhough|schoenberg|webern|berg|feldman|berio|nono|feat\.|이루마|히사이시|류이치|커버|리믹스|자장가", re.I)
 
 GENRE_ARTISTS = {
     "pop": [
@@ -488,9 +488,10 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
         if taste_tags:
             queries.append((f'tag:"{random.choice(taste_tags)}"', random.randint(0, 120)))
     if genre == "classical":
+        neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"'
         ctags = random.sample(GENRE_TO_MB_TAGS["classical"], 2)
         for ct in ctags:
-            queries.append((f'tag:"{ct}" AND status:official', random.randint(0, 2500)))
+            queries.append((f'tag:"{ct}" AND status:official {neg}', random.randint(0, 2000)))
     else:
         chosen_tag = random.choice(tags)
         queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 2000)))
@@ -530,8 +531,12 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
         artist = "".join((c.get("name") or (c.get("artist") or {}).get("name") or "") + (c.get("joinphrase") or "") for c in credits).strip()
         if not title or not artist or artist == "[unknown]":
             continue
-        if genre == "classical" and CLASSICAL_EXCLUDE_RE.search(f"{title} {artist}"):
-            continue
+        if genre == "classical":
+            if CLASSICAL_EXCLUDE_RE.search(f"{title} {artist}"):
+                continue
+            r_tags = [(t.get("name") or "").lower() for t in (r.get("tags") or [])]
+            if any(re.search(r"rock|pop|metal|jazz|hip hop|electronic|soundtrack|new age|ambient|punk|indie|folk|rnb|soul", rt) for rt in r_tags):
+                continue
         mb_id = f"mb_{r['id']}"
         genres = [genre] if genre != "all" else [chosen_tag]
         cur.execute(
