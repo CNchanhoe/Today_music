@@ -465,7 +465,7 @@ class SaveRecordRequest(BaseModel):
 
 async def fetch_artist_tags(name: str) -> List[str]:
     try:
-        async with httpx.AsyncClient(timeout=2.5, headers={"User-Agent": "TodaysMusicApp/1.0 (https://example.com)"}) as client:
+        async with httpx.AsyncClient(timeout=2.5, headers={"User-Agent": "TodaysMusicWeb/1.0 (https://github.com/CNchanhoe/Today_music)"}) as client:
             res = await client.get("https://musicbrainz.org/ws/2/artist/", params={"query": name, "limit": 1, "fmt": "json"})
             if res.status_code != 200:
                 return []
@@ -488,20 +488,24 @@ async def sync_musicbrainz_into_db(genre: str, fav_artists: List[str]) -> int:
         if taste_tags:
             queries.append((f'tag:"{random.choice(taste_tags)}"', random.randint(0, 120)))
     if genre == "classical":
-        neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"'
+        neg = 'AND NOT tag:rock AND NOT tag:pop AND NOT tag:"classic rock" AND NOT tag:metal AND NOT tag:jazz AND NOT tag:electronic AND NOT tag:soundtrack AND NOT tag:"new age"'
         ct = random.choice(GENRE_TO_MB_TAGS["classical"])
-        queries.append((f'tag:"{ct}" AND status:official {neg}', random.randint(0, 2500)))
+        queries.append((f'tag:"{ct}" AND status:official {neg}', random.randint(0, 250)))
     else:
         chosen_tag = random.choice(tags)
-        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 2000)))
+        queries.append((f'tag:"{chosen_tag}" AND status:official', random.randint(0, 300)))
 
     recordings = []
     try:
-        async with httpx.AsyncClient(timeout=4.0, headers={"User-Agent": "TodaysMusicApp/1.0 (https://example.com)"}) as client:
+        async with httpx.AsyncClient(timeout=8.0, headers={"User-Agent": "TodaysMusicWeb/1.0 (https://github.com/CNchanhoe/Today_music)"}) as client:
             for q_str, off in queries:
-                res = await client.get("https://musicbrainz.org/ws/2/recording/", params={"query": q_str, "limit": 100, "offset": off, "fmt": "json"})
+                res = await client.get("https://musicbrainz.org/ws/2/recording/", params={"query": q_str, "limit": 50, "offset": off, "fmt": "json"})
                 if res.status_code == 200:
                     items = res.json().get("recordings", [])
+                    if not items and off > 0:
+                        res2 = await client.get("https://musicbrainz.org/ws/2/recording/", params={"query": q_str, "limit": 50, "offset": 0, "fmt": "json"})
+                        if res2.status_code == 200:
+                            items = res2.json().get("recordings", [])
                     if q_str.startswith('artist:"'):
                         last_name = q_str[8:-1].strip().split()[-1].lower()
                         filtered_items = []
@@ -582,7 +586,7 @@ async def recommend(req: RecommendRequest):
         if req.targetMood in json.loads(r["target_moods"]):
             score += 3.5
         if r["source"] == "musicbrainz":
-            score += 2.0
+            score += 12.0
         if req.favArtists:
             hay = f"{r['artist']} {r['title']}".lower()
             if any(f.lower() in hay for f in req.favArtists):

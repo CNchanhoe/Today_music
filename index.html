@@ -891,7 +891,7 @@
       const offset = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
       const url = `https://musicbrainz.org/ws/2/recording/?query=${encodeURIComponent(queryStr)}&limit=${limit}&offset=${offset}&fmt=json`;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 4000);
+      const timer = setTimeout(() => controller.abort(), 7000);
       try {
         const res = await fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
         clearTimeout(timer);
@@ -964,12 +964,12 @@
       if (state.genre === 'classical') {
         const classicalTags = [...GENRE_TO_MB_TAGS.classical];
         const chosenCTag = classicalTags[Math.floor(Math.random() * classicalTags.length)];
-        const neg = 'NOT tag:rock NOT tag:pop NOT tag:"classic rock" NOT tag:metal NOT tag:jazz NOT tag:electronic NOT tag:soundtrack NOT tag:"new age"';
+        const neg = 'AND NOT tag:rock AND NOT tag:pop AND NOT tag:"classic rock" AND NOT tag:metal AND NOT tag:jazz AND NOT tag:electronic AND NOT tag:soundtrack AND NOT tag:"new age"';
         // Single MusicBrainz request (limit=35) avoids 1 req/sec 503 rate-limit!
         baseTracks = await queryMusicBrainzRecordings(
           `tag:"${chosenCTag}" AND status:official ${neg}`,
-          100,
-          Math.min(4000, 400 + state.rerollDepth * 500),
+          50,
+          Math.min(1200, 150 + state.rerollDepth * 150),
           true
         );
       } else {
@@ -980,7 +980,7 @@
         const qStr = (state.genre !== 'all' && Math.random() < 0.4)
           ? `tag:"${chosenTag}" AND tag:"${targetTags[0]}" AND status:official`
           : `tag:"${chosenTag}" AND status:official`;
-        baseTracks = await queryMusicBrainzRecordings(qStr, 100, maxOff);
+        baseTracks = await queryMusicBrainzRecordings(qStr, 50, Math.min(1200, 150 + state.rerollDepth * 150));
       }
 
       // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
@@ -1069,6 +1069,7 @@
               if (song.weathers && song.weathers.includes(state.weather)) score += 2.5;
               if (song.current && song.current.includes(state.currentMood)) score += 2.5;
               if (song.target && song.target.includes(state.targetMood)) score += 3.5;
+              if (song.source === 'musicbrainz') score += 12.0;
               if (state.favArtists.length > 0) {
                 const hay = `${song.artist} ${song.title}`.toLowerCase();
                 if (state.favArtists.some(f => hay.includes(getFavName(f).toLowerCase()))) score += 4.0;
@@ -1127,6 +1128,13 @@
       reroll.textContent = '새로운 곡 찾는 중...';
 
       let picked = await tryBackendRecommend();
+      if (picked && (picked.every(t => state.recentSongIds.includes(t.id)) || picked.every(t => String(t.id).startsWith('s')))) {
+        const mbDirect = await fetchMusicBrainzTracks();
+        if (mbDirect && mbDirect.length >= 4) {
+          await saveTracksToIndexedDB(mbDirect);
+          picked = mbDirect.slice(0, 4);
+        }
+      }
 
       if (!picked) {
         const mbTracks = await fetchMusicBrainzTracks();
