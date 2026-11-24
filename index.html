@@ -922,6 +922,9 @@
           const j = Math.floor(Math.random() * (i + 1));
           [parsed[i], parsed[j]] = [parsed[j], parsed[i]];
         }
+        if (parsed.length === 0 && off > 0) {
+          return await queryITunesTracks(term, limit, 0);
+        }
         return parsed;
       } catch (e) {
         clearTimeout(timer);
@@ -937,7 +940,103 @@
       return typeof fav === 'object' && Array.isArray(fav.tags) ? fav.tags : [];
     }
 
-    async function fetchMusicBrainzTracks() {
+    const TIME_QUERY_WORDS = {
+      early_morning: ['morning', 'dawn', 'sunrise'],
+      morning: ['morning', 'coffee', 'daylight'],
+      afternoon: ['afternoon', 'day', 'drive'],
+      sunset: ['sunset', 'evening', 'twilight'],
+      night: ['night', 'midnight', 'moonlight'],
+      late_night: ['late night', 'midnight', '3am']
+    };
+
+    const WEATHER_QUERY_WORDS = {
+      sunny: ['sunny', 'summer', 'bright'],
+      clear_breeze: ['breeze', 'spring', 'fresh'],
+      partly_cloudy: ['cloudy', 'soft', 'walk'],
+      cloudy: ['cloudy', 'grey', 'melancholy'],
+      foggy: ['mist', 'dreamy', 'fog'],
+      drizzle: ['rain', 'drizzle', 'cafe'],
+      rainy: ['rain', 'rainy', '비'],
+      stormy: ['storm', 'thunder', 'dramatic'],
+      snowy: ['snow', 'winter', '눈'],
+      windy: ['wind', 'autumn', '바람']
+    };
+
+    const TARGET_QUERY_WORDS = {
+      energize: ['upbeat', 'workout', 'energy', 'power'],
+      excited_up: ['party', 'dance', 'happy', 'fun'],
+      comfort: ['comfort', 'warm', 'healing', '위로'],
+      calm_down: ['calm', 'peaceful', 'quiet', 'chill'],
+      refresh: ['refresh', 'feel good', 'groovy', 'drive'],
+      focus: ['focus', 'study', 'instrumental', 'concentration'],
+      rest: ['relax', 'lounge', 'soft', 'easy'],
+      sleep: ['sleep', 'lullaby', 'dream', 'night'],
+      confident: ['confident', 'anthem', 'bold', 'strong'],
+      reflective: ['sad', 'emotional', 'nostalgia', '감성']
+    };
+
+    const GENRE_QUERY_WORDS = {
+      all: ['', 'pop', 'indie', 'rnb', 'jazz'],
+      pop: ['pop'],
+      kpop: ['kpop', 'korean', '가요', '발라드'],
+      rnb: ['rnb', 'r&b'],
+      soul: ['soul', 'neo soul'],
+      indie: ['indie', 'indie pop'],
+      rock: ['rock', 'alternative rock'],
+      hiphop: ['hip hop', 'rap'],
+      jazz: ['jazz'],
+      lofi: ['lofi', 'lo-fi beats', 'chillhop'],
+      ambient: ['ambient', 'piano instrumental'],
+      citypop: ['city pop', 'japanese 80s'],
+      acoustic: ['acoustic', 'unplugged']
+    };
+
+    function pickRand(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    async function queryITunesTracks(term, limit = 50, maxOffset = 80) {
+      const off = maxOffset > 0 ? Math.floor(Math.random() * maxOffset) : 0;
+      const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=song&limit=${limit}&offset=${off}`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4500);
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) return [];
+        const data = await res.json();
+        const items = Array.isArray(data.results) ? data.results : [];
+        const recentSet = new Set([...state.recentSongIds, ...state.currentRecs.map(x => x.id)]);
+        const seen = new Set();
+        const parsed = [];
+        for (const it of items) {
+          const title = (it.trackName || '').trim();
+          const artist = (it.artistName || '').trim();
+          if (!title || !artist) continue;
+          const id = `it_${it.trackId}`;
+          const k = `${title}::${artist}`.toLowerCase();
+          if (seen.has(k) || recentSet.has(id)) continue;
+          if (!isAllowedForGenre({ title, artist })) continue;
+          if (state.genre === 'classical') {
+            const gName = (it.primaryGenreName || '').toLowerCase();
+            if (gName && !gName.includes('classical') && !gName.includes('클래식')) continue;
+          }
+          seen.add(k);
+          parsed.push({ id, title, artist, source: 'musicbrainz' });
+        }
+        for (let i = parsed.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [parsed[i], parsed[j]] = [parsed[j], parsed[i]];
+        }
+        return parsed;
+      } catch (e) {
+        clearTimeout(timer);
+        return [];
+      }
+    }
+
+    async function fetchLiveTracks() {
+
       const targetTags = MOOD_TO_MB_TAGS[state.targetMood] || ['pop', 'indie'];
       const weatherTags = WEATHER_TO_MB_TAGS[state.weather] || [];
       const genreTags = state.genre !== 'all' ? (GENRE_TO_MB_TAGS[state.genre] || []) : [];
@@ -947,42 +1046,49 @@
       if (state.favArtists.length > 0 && state.genre !== 'classical') {
         const pickFav = state.favArtists[Math.floor(Math.random() * state.favArtists.length)];
         const favName = getFavName(pickFav);
-        let favTags = getFavTags(pickFav);
-        if (!favTags.length && favName) favTags = await fetchArtistRelatedTags(favName);
-
         if (favName) {
-          artistTracks = await queryMusicBrainzRecordings(`artist:"${favName}"`, 10, 20);
-        }
-        if (favTags.length > 0) {
-          const tTag = favTags[Math.floor(Math.random() * favTags.length)];
-          tasteTagTracks = await queryMusicBrainzRecordings(`tag:"${tTag}"`, 12, 120);
+          artistTracks = await queryITunesTracks(favName, 25);
         }
       }
 
       let baseTracks = [];
       if (state.genre === 'classical') {
         const composers = ["Johann Sebastian Bach", "Antonio Vivaldi", "George Frideric Handel", "Domenico Scarlatti", "Alessandro Scarlatti", "Henry Purcell", "Arcangelo Corelli", "Georg Philipp Telemann", "Jean-Philippe Rameau", "Claudio Monteverdi", "Tomaso Albinoni", "Dieterich Buxtehude", "Johann Pachelbel", "Giovanni Battista Pergolesi", "François Couperin", "Jean-Baptiste Lully", "Giuseppe Tartini", "Alessandro Marcello", "Benedetto Marcello", "Pietro Locatelli", "Sylvius Leopold Weiss", "Heinrich Ignaz Franz Biber", "Wolfgang Amadeus Mozart", "Ludwig van Beethoven", "Joseph Haydn", "Christoph Willibald Gluck", "Muzio Clementi", "Luigi Boccherini", "Carl Philipp Emanuel Bach", "Johann Christian Bach", "Carl Stamitz", "Antonio Salieri", "Johann Nepomuk Hummel", "Carl Czerny", "Friedrich Kuhlau", "Anton Diabelli", "Karl Ditters von Dittersdorf", "Giovanni Battista Viotti", "Louis Spohr", "Frédéric Chopin", "Franz Schubert", "Robert Schumann", "Clara Schumann", "Franz Liszt", "Johannes Brahms", "Felix Mendelssohn", "Fanny Mendelssohn", "Pyotr Ilyich Tchaikovsky", "Sergei Rachmaninoff", "Alexander Scriabin", "Bedřich Smetana", "Antonín Dvořák", "Richard Strauss", "Johann Strauss II", "Johann Strauss I", "Josef Strauss", "Gustav Mahler", "Hector Berlioz", "Georges Bizet", "Camille Saint-Saëns", "Gabriel Fauré", "César Franck", "Edvard Grieg", "Jean Sibelius", "Edward Elgar", "Niccolò Paganini", "Modest Mussorgsky", "Nikolai Rimsky-Korsakov", "Alexander Borodin", "Gioachino Rossini", "Giuseppe Verdi", "Giacomo Puccini", "Richard Wagner", "Anton Bruckner", "Max Bruch", "Pablo de Sarasate", "Henryk Wieniawski", "Isaac Albéniz", "Enrique Granados", "Vincenzo Bellini", "Gaetano Donizetti", "Charles-Valentin Alkan", "Sigismond Thalberg", "Giacomo Meyerbeer", "Charles Gounod", "Jacques Offenbach", "Édouard Lalo", "Ernest Chausson", "Paul Dukas", "Emmanuel Chabrier", "Jules Massenet", "Léo Delibes", "Henri Vieuxtemps", "Joseph Joachim", "Max Reger", "Ferruccio Busoni", "Hugo Wolf", "Alexander Glazunov", "Sergei Lyapunov", "Mily Balakirev", "César Cui", "Vasily Kalinnikov", "Anton Arensky", "Sergei Taneyev", "Anatoly Liadov", "Nikolai Medtner", "Leoš Janáček", "Josef Suk", "Zdeněk Fibich", "Bohuslav Martinů", "Zoltán Kodály", "George Enescu", "Carl Nielsen", "Johan Svendsen", "Hugo Alfvén", "Wilhelm Stenhammar", "Franz Berwald", "Franz Lehár", "Emmerich Kálmán", "Pietro Mascagni", "Ruggero Leoncavallo", "Claude Debussy", "Maurice Ravel", "Erik Satie", "Igor Stravinsky", "Sergei Prokofiev", "Dmitri Shostakovich", "Béla Bartók", "Gustav Holst", "Ralph Vaughan Williams", "Ottorino Respighi", "Manuel de Falla", "Samuel Barber", "Aaron Copland", "William Walton", "Benjamin Britten", "Frank Bridge", "Gerald Finzi", "Arnold Bax", "John Ireland", "Frederick Delius", "Joaquín Rodrigo", "Joaquín Turina", "Francisco Tárrega", "Agustín Barrios", "Fernando Sor", "Mauro Giuliani", "Matteo Carcassi", "Heitor Villa-Lobos", "Alberto Ginastera", "Manuel Ponce", "George Gershwin", "Leonard Bernstein", "Amy Beach", "Edward MacDowell", "Aram Khachaturian"];
-        const chosenComp = composers[Math.floor(Math.random() * composers.length)];
-        // Fetch 50 works by 1 random traditional composer (no 503 rate-limit, 0 non-classical noise!)
-        const compTracks = await queryMusicBrainzRecordings(
-          `artist:"${chosenComp}" AND status:official`,
-          50,
-          Math.min(300, state.rerollDepth * 30)
-        );
-        if (compTracks.length) await saveTracksToIndexedDB(compTracks);
-        const dbClassical = await queryIndexedDB([]);
-        baseTracks = [...(compTracks.length ? [compTracks[0]] : []), ...dbClassical];
+        const c1 = pickRand(composers);
+        const c2 = pickRand(composers);
+        const needWord = pickRand(TARGET_QUERY_WORDS[state.targetMood] || ['']);
+        const [it1, it2, mb1] = await Promise.all([
+          queryITunesTracks(`${c1} ${needWord}`, 25),
+          queryITunesTracks(c2, 25),
+          queryMusicBrainzRecordings(`artist:"${c1}" AND status:official`, 30, Math.min(200, state.rerollDepth * 25))
+        ]);
+        baseTracks = [...it1.slice(0, 2), ...it2.slice(0, 2), ...mb1, ...it1.slice(2), ...it2.slice(2)];
+        for (let i = baseTracks.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
+        }
       } else {
-        const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
-        const chosenTag = basePool[Math.floor(Math.random() * basePool.length)];
-        const maxOff = Math.min(4000, 400 + state.rerollDepth * 500);
-        // Single MusicBrainz request (limit=35) avoids 1 req/sec 503 rate-limit!
-        const qStr = (state.genre !== 'all' && Math.random() < 0.4)
-          ? `tag:"${chosenTag}" AND tag:"${targetTags[0]}" AND status:official`
-          : `tag:"${chosenTag}" AND status:official`;
-        baseTracks = await queryMusicBrainzRecordings(qStr, 50, Math.min(1200, 150 + state.rerollDepth * 150));
-      }
+        const tWord = pickRand(TIME_QUERY_WORDS[state.timeOfDay] || ['']);
+        const wWord = pickRand(WEATHER_QUERY_WORDS[state.weather] || ['']);
+        const nWord = pickRand(TARGET_QUERY_WORDS[state.targetMood] || ['']);
+        const gWord = pickRand(GENRE_QUERY_WORDS[state.genre] || ['']);
+        const moodQuery1 = [wWord, nWord, gWord].filter(Boolean).join(' ');
+        const moodQuery2 = [tWord, nWord, gWord].filter(Boolean).join(' ');
 
+        const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
+        const chosenTag = pickRand(basePool);
+
+        const [it1, it2, mbTracks] = await Promise.all([
+          queryITunesTracks(moodQuery1, 35),
+          queryITunesTracks(moodQuery2, 35),
+          queryMusicBrainzRecordings(`tag:"${chosenTag}" AND status:official`, 30, Math.min(1200, 100 + state.rerollDepth * 150))
+        ]);
+        baseTracks = [...it1, ...it2, ...mbTracks];
+        for (let i = baseTracks.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
+        }
+      }
       // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
       const combined = [];
       const usedKeys = new Set();
@@ -1012,13 +1118,11 @@
       return new Promise((resolve) => {
         if (!window.indexedDB) return resolve(null);
         try {
-          const req = indexedDB.open('TodaysMusicDB', 1);
+          const req = indexedDB.open('TodaysMusicDB', 2);
           req.onupgradeneeded = (e) => {
             const db = e.target.result;
-            if (!db.objectStoreNames.contains('songs')) {
-              const store = db.createObjectStore('songs', { keyPath: 'id' });
-              SONGS.forEach(song => store.put({ ...song, source: 'seed' }));
-            }
+            const store = db.objectStoreNames.contains('songs') ? e.target.transaction.objectStore('songs') : db.createObjectStore('songs', { keyPath: 'id' });
+            SONGS.forEach(song => store.put({ ...song, source: 'seed' }));
           };
           req.onsuccess = () => resolve(req.result);
           req.onerror = () => resolve(null);
@@ -1080,8 +1184,10 @@
               else if (state.recentSongIds.includes(song.id)) penalty -= 40;
               return { song, total: score + penalty + Math.random() * 4.5 };
             });
-            scored.sort((a, b) => b.total - a.total);
-            const topPool = scored.slice(0, 10).map(item => item.song);
+            const unseen = scored.filter(item => !currentIds.has(item.song.id) && !state.recentSongIds.includes(item.song.id));
+            const active = unseen.length >= 4 ? unseen : scored;
+            active.sort((a, b) => b.total - a.total);
+            const topPool = active.slice(0, 15).map(item => item.song);
             for (let i = topPool.length - 1; i > 0; i--) {
               const j = Math.floor(Math.random() * (i + 1));
               [topPool[i], topPool[j]] = [topPool[j], topPool[i]];
@@ -1107,7 +1213,7 @@
             currentMood: state.currentMood,
             targetMood: state.targetMood,
             genre: state.genre,
-            excludeIds: state.currentRecs.map(x => x.id),
+            excludeIds: Array.from(new Set([...state.recentSongIds, ...state.currentRecs.map(x => x.id)])),
             favArtists: state.favArtists.map(f => getFavName(f)).filter(Boolean)
           })
         });
@@ -1127,36 +1233,42 @@
       btn.textContent = '음악 찾는 중...';
       reroll.textContent = '새로운 곡 찾는 중...';
 
-      let picked = await tryBackendRecommend();
-      if (picked && (picked.every(t => state.recentSongIds.includes(t.id)) || picked.every(t => String(t.id).startsWith('s')))) {
-        const mbDirect = await fetchMusicBrainzTracks();
-        if (mbDirect && mbDirect.length >= 4) {
-          await saveTracksToIndexedDB(mbDirect);
-          picked = mbDirect.slice(0, 4);
-        }
+      let picked = await fetchLiveTracks();
+      if (picked && picked.length) {
+        await saveTracksToIndexedDB(picked);
       }
-
-      if (!picked) {
-        const mbTracks = await fetchMusicBrainzTracks();
-        if (mbTracks.length) await saveTracksToIndexedDB(mbTracks);
-        picked = mbTracks.slice(0, 4);
-
-        if (picked.length < 4) {
-          const excludeKeys = picked.map(x => `${x.title}::${x.artist}`.toLowerCase());
-          const dbTracks = await queryIndexedDB(excludeKeys);
-          for (const f of dbTracks) {
+      if (!picked || picked.length < 4) {
+        const backendPicked = await tryBackendRecommend();
+        if (backendPicked && backendPicked.length) {
+          const existingKeys = new Set((picked || []).map(x => `${x.title}::${x.artist}`.toLowerCase()));
+          picked = picked || [];
+          for (const bp of backendPicked) {
             if (picked.length >= 4) break;
-            const k = `${f.title}::${f.artist}`.toLowerCase();
-            if (!excludeKeys.includes(k)) {
-              picked.push(f);
-              excludeKeys.push(k);
+            const k = `${bp.title}::${bp.artist}`.toLowerCase();
+            if (!existingKeys.has(k) && !state.recentSongIds.includes(bp.id)) {
+              picked.push(bp);
+              existingKeys.add(k);
             }
           }
         }
       }
 
+      if (!picked) picked = [];
+      if (picked.length < 4) {
+        const excludeKeys = picked.map(x => `${x.title}::${x.artist}`.toLowerCase());
+        const dbTracks = await queryIndexedDB(excludeKeys);
+        for (const f of dbTracks) {
+          if (picked.length >= 4) break;
+          const k = `${f.title}::${f.artist}`.toLowerCase();
+          if (!excludeKeys.includes(k)) {
+            picked.push(f);
+            excludeKeys.push(k);
+          }
+        }
+      }
+
       const newRecent = [...picked.map(x => x.id), ...state.recentSongIds.filter(id => !picked.some(x => x.id === id))];
-      state.recentSongIds = newRecent.slice(0, 12);
+      state.recentSongIds = newRecent.slice(0, 150);
       persistRecent();
 
       state.currentRecs = picked;
