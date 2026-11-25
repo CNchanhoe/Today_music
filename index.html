@@ -29,7 +29,7 @@
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
-      padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
     }
     .touch-press {
       transition: transform 0.14s ease, background-color 0.15s ease;
@@ -156,6 +156,25 @@
           </div>
         </div>
 
+        <!-- 6. 지금 하는 일 -->
+        <div class="rounded-2xl border border-slate-200/80 bg-white/80 overflow-hidden">
+          <button type="button" data-toggle-section="activity" class="touch-press w-full px-4 py-3.5 min-h-[52px] flex items-center justify-between gap-2 text-left">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center shrink-0">6</span>
+              <span class="text-sm font-bold text-slate-800">지금 하는 일</span>
+            </div>
+            <div class="flex items-center gap-2 min-w-0">
+              <span id="badge-activity" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 truncate"></span>
+              <svg id="chevron-activity" class="w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+          <div id="panel-activity" class="hidden px-3.5 pb-3.5 pt-1 border-t border-slate-100">
+            <div id="activity-options" class="grid grid-cols-2 gap-2 mt-2"></div>
+          </div>
+        </div>
+
         <button id="btn-recommend" type="button" class="touch-press mt-2 w-full py-3.5 min-h-[48px] rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md">
           추천받기
         </button>
@@ -217,7 +236,7 @@
     </div>
   </nav>
 
-  <div class="fixed bottom-1 right-2.5 z-50 text-[9px] font-medium text-slate-400/80 pointer-events-none select-none">
+  <div class="fixed z-50 text-[7px] leading-none font-medium text-slate-400/75 pointer-events-none select-none" style="bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); right: calc(env(safe-area-inset-right, 0px) + 18px);">
     Made by 차내
   </div>
 
@@ -296,15 +315,16 @@
 
     const WEATHERS = [
       { id: 'sunny', label: '화창함', sticker: 'sun', icon: '☀️', weatherBg: null },
-      { id: 'clear_breeze', label: '선선하고 맑음', sticker: 'sun_breeze', icon: '🌤️', weatherBg: null },
+      { id: 'clear_breeze', label: '선선함', sticker: 'sun_breeze', icon: '🌤️', weatherBg: null },
       { id: 'partly_cloudy', label: '구름 조금', sticker: 'partly_cloudy', icon: '⛅', weatherBg: null },
       { id: 'cloudy', label: '흐림', sticker: 'overcast', icon: '☁️', weatherBg: 'from-slate-200 via-zinc-100 to-blue-50' },
       { id: 'foggy', label: '안개', sticker: 'fog', icon: '🌫️', weatherBg: 'from-zinc-200 via-slate-100 to-stone-100' },
       { id: 'drizzle', label: '보슬비', sticker: 'drizzle', icon: '🌦️', weatherBg: 'from-sky-100 via-slate-200 to-indigo-100' },
       { id: 'rainy', label: '비', sticker: 'rain', icon: '🌧️', weatherBg: 'from-slate-200 via-sky-100 to-indigo-100' },
-      { id: 'stormy', label: '천둥 · 폭우', sticker: 'storm', icon: '⛈️', weatherBg: 'from-slate-300 via-indigo-200 to-slate-200' },
+      { id: 'heavy_rain', label: '폭우', sticker: 'rain', icon: '🌧️', weatherBg: 'from-slate-300 via-sky-200 to-indigo-200' },
+      { id: 'thunder', label: '천둥번개', sticker: 'storm', icon: '⛈️', weatherBg: 'from-slate-300 via-indigo-200 to-slate-200' },
       { id: 'snowy', label: '눈', sticker: 'snow', icon: '❄️', weatherBg: 'from-sky-100 via-white to-indigo-100' },
-      { id: 'windy', label: '강한 바람', sticker: 'breeze', icon: '💨', weatherBg: 'from-teal-100 via-slate-100 to-sky-100' }
+      { id: 'windy', label: '바람', sticker: 'breeze', icon: '💨', weatherBg: 'from-teal-100 via-slate-100 to-sky-100' }
     ];
 
     const CURRENT_MOODS = [
@@ -315,6 +335,8 @@
       { id: 'tired', label: '피곤함', sticker: 'tired', icon: '😮‍💨' },
       { id: 'sad', label: '우울함', sticker: 'sad', icon: '😔' },
       { id: 'lonely', label: '외로움', sticker: 'lonely', icon: '🥀' },
+      { id: 'nostalgic', label: '그리움', sticker: 'aurora', icon: '🌙' },
+      { id: 'anxious', label: '긴장됨', sticker: 'stuffy', icon: '💓' },
       { id: 'stressed', label: '스트레스', sticker: 'stress', icon: '😤' },
       { id: 'frustrated', label: '답답함', sticker: 'stuffy', icon: '😠' },
       { id: 'focused', label: '몰입', sticker: 'immersed', icon: '🤔' }
@@ -322,7 +344,7 @@
 
     const TARGET_MOODS = [
       { id: 'energize', label: '활력 충전', sticker: 'recharge', icon: '⚡' },
-      { id: 'excited_up', label: '신남', sticker: 'excite', icon: '🎉' },
+      { id: 'excited_up', label: '기분 업', sticker: 'excite', icon: '🎉' },
       { id: 'comfort', label: '따뜻한 위로', sticker: 'heart', icon: '🫂' },
       { id: 'calm_down', label: '차분함', sticker: 'sprout', icon: '🌿' },
       { id: 'refresh', label: '기분 전환', sticker: 'refresh_arc', icon: '🌈' },
@@ -330,11 +352,25 @@
       { id: 'rest', label: '편안한 휴식', sticker: 'cozy_rest', icon: '🛌' },
       { id: 'sleep', label: '숙면 유도', sticker: 'deep_sleep', icon: '💤' },
       { id: 'confident', label: '자신감', sticker: 'sparkle', icon: '💪' },
-      { id: 'reflective', label: '감성 몰입', sticker: 'aurora', icon: '💭' }
+      { id: 'reflective', label: '감성 몰입', sticker: 'aurora', icon: '💭' },
+      { id: 'contemplation', label: '사색', sticker: 'immersed', icon: '🕯️' },
+      { id: 'inspiration', label: '영감', sticker: 'sparkle', icon: '✨' }
+    ];
+
+    const ACTIVITIES = [
+      { id: 'reading', label: '독서', sticker: 'cozy_rest', icon: '📖' },
+      { id: 'studying', label: '공부', sticker: 'headphones', icon: '✏️' },
+      { id: 'deep_work', label: '집중 업무', sticker: 'immersed', icon: '💻' },
+      { id: 'walking', label: '산책', sticker: 'sun_breeze', icon: '🚶' },
+      { id: 'commute', label: '이동', sticker: 'refresh_arc', icon: '🚆' },
+      { id: 'tea_time', label: '티타임', sticker: 'coffee', icon: '🍵' },
+      { id: 'rest', label: '휴식', sticker: 'sprout', icon: '🛋️' },
+      { id: 'cooking', label: '요리', sticker: 'happy', icon: '🍳' },
+      { id: 'before_sleep', label: '취침 준비', sticker: 'deep_sleep', icon: '🌙' },
+      { id: 'stretching', label: '스트레칭', sticker: 'breeze', icon: '🧘' }
     ];
 
     const GENRES = [
-      { id: 'all', label: '전체', sticker: 'globe_music', icon: '🌐' },
       { id: 'pop', label: '팝', sticker: 'mic', icon: '🎧' },
       { id: 'kpop', label: '가요', sticker: 'kpop_heart', icon: '🇰🇷' },
       { id: 'rnb', label: 'R&B', sticker: 'piano', icon: '🎹' },
@@ -716,13 +752,15 @@
       weather: 'rainy',
       currentMood: 'tired',
       targetMood: 'comfort',
-      genre: 'all',
+      genre: 'indie',
+      activity: 'rest',
       openSections: {
         time: false,
         weather: false,
         currentMood: false,
         targetMood: false,
-        genre: false
+        genre: false,
+        activity: false
       },
       hasRecommended: false,
       currentRecs: [],
@@ -897,7 +935,9 @@
 
     function isAllowedForGenre(song) {
       if (state.genre !== 'classical') return true;
-      if (CLASSICAL_EXCLUDE_RE.test(`${song.title} ${song.artist}`)) return false;
+      if (GENERIC_CLASSICAL_ARTIST_BLOCK_RE.test((song.artist || "").trim())) return false;
+        if (/\bbaroque\b/i.test(song.artist || "") && !CLASSICAL_COMPOSER_WHITELIST_RE.test(song.artist || "")) return false;
+        if (CLASSICAL_EXCLUDE_RE.test(`${song.title} ${song.artist}`)) return false;
       return CLASSICAL_COMPOSER_WHITELIST_RE.test(song.artist || '');
     }
 
@@ -954,6 +994,32 @@
       return typeof fav === 'object' && Array.isArray(fav.tags) ? fav.tags : [];
     }
 
+    const CLASSICAL_MOOD_WORDS = {
+      energize: ['allegro', 'vivace', 'concerto', 'overture', 'symphony'],
+      excited_up: ['waltz', 'scherzo', 'presto', 'polonaise', 'allegro'],
+      comfort: ['andante', 'serenade', 'romance', 'cello', 'adagio'],
+      calm_down: ['adagio', 'largo', 'pavane', 'pastorale', 'andante'],
+      refresh: ['spring', 'allegro', 'divertimento', 'flute', 'vivaldi'],
+      focus: ['prelude', 'fugue', 'sonata', 'etude', 'quartet'],
+      rest: ['barcarolle', 'reverie', 'andante', 'serenade', 'impromptu'],
+      sleep: ['nocturne', 'berceuse', 'largo', 'adagio', 'moonlight'],
+      confident: ['symphony', 'heroic', 'march', 'concerto', 'fantasie'],
+      reflective: ['nocturne', 'elegy', 'ballade', 'rhapsody', 'adagio']
+    };
+
+    const CLASSICAL_WEATHER_WORDS = {
+      sunny: ['allegro', 'spring', 'waltz'],
+      clear_breeze: ['pastorale', 'serenade', 'andante'],
+      partly_cloudy: ['sonata', 'impromptu', 'romance'],
+      cloudy: ['andante', 'prelude', 'elegy'],
+      foggy: ['reverie', 'pavane', 'nocturne'],
+      drizzle: ['prelude', 'andante', 'cello'],
+      rainy: ['raindrop', 'adagio', 'nocturne', 'cello'],
+      stormy: ['appassionata', 'tempest', 'symphony'],
+      snowy: ['winter', 'nocturne', 'celesta'],
+      windy: ['etude', 'rhapsody', 'overture']
+    };
+
     const TIME_QUERY_WORDS = {
       early_morning: ['morning', 'dawn', 'sunrise'],
       morning: ['morning', 'coffee', 'daylight'],
@@ -971,7 +1037,8 @@
       foggy: ['mist', 'dreamy', 'fog'],
       drizzle: ['rain', 'drizzle', 'cafe'],
       rainy: ['rain', 'rainy', '비'],
-      stormy: ['storm', 'thunder', 'dramatic'],
+      heavy_rain: ['rain', 'storm', 'dramatic'],
+      thunder: ['thunder', 'tempest', 'dramatic'],
       snowy: ['snow', 'winter', '눈'],
       windy: ['wind', 'autumn', '바람']
     };
@@ -986,7 +1053,9 @@
       rest: ['relax', 'lounge', 'soft', 'easy'],
       sleep: ['sleep', 'lullaby', 'dream', 'night'],
       confident: ['confident', 'anthem', 'bold', 'strong'],
-      reflective: ['sad', 'emotional', 'nostalgia', '감성']
+      reflective: ['sad', 'emotional', 'nostalgia', '감성'],
+      contemplation: ['meditation', 'calm', 'reflection'],
+      inspiration: ['uplifting', 'bright', 'dreamy']
     };
 
     const GENRE_QUERY_WORDS = {
@@ -1050,6 +1119,130 @@
       }
     }
 
+    
+    const ACTIVITY_GENERAL_PROFILE = {
+      reading: { words: ['acoustic', 'piano', 'calm', 'soft', 'lofi', 'instrumental', 'ambient', 'gentle'], avoid: /metal|hard rock|club|party|remix|trap|edm|screamo|march/i },
+      studying: { words: ['lofi', 'instrumental', 'study', 'focus', 'piano', 'chill', 'beats', 'baroque'], avoid: /party|club|remix|metal|karaoke/i },
+      deep_work: { words: ['focus', 'instrumental', 'electronic', 'ambient', 'beats', 'synth', 'minimal'], avoid: /karaoke|party|lullaby/i },
+      walking: { words: ['indie', 'breeze', 'walk', 'sunshine', 'feel good', 'acoustic', 'pop', 'groove'], avoid: /funeral|sleep|lullaby/i },
+      commute: { words: ['drive', 'pop', 'rnb', 'city pop', 'groove', 'upbeat', 'rock', 'hip hop'], avoid: /sleep|lullaby|asmr/i },
+      tea_time: { words: ['jazz', 'cafe', 'acoustic', 'bossanova', 'soul', 'soft', 'warm', 'waltz'], avoid: /metal|hard rock|club|edm/i },
+      rest: { words: ['chill', 'relax', 'soul', 'rnb', 'soft', 'lounge', 'warm', 'easy'], avoid: /metal|hard rock|edm|club/i },
+      cooking: { words: ['funk', 'disco', 'upbeat', 'groove', 'soul', 'happy', 'dance', 'pop'], avoid: /sad|funeral|sleep|lullaby/i },
+      before_sleep: { words: ['sleep', 'night', 'dream', 'moon', 'ambient', 'piano', 'nocturne', 'soft'], avoid: /metal|rock|hip hop|rap|club|party|edm|dance|upbeat|remix/i },
+      stretching: { words: ['chill', 'flow', 'ambient', 'smooth', 'soul', 'breeze', 'morning'], avoid: /metal|hard rock|trap/i }
+    };
+
+    const CURRENT_MOOD_QUERY_WORDS = {
+      happy: ['happy', 'bright', 'sunny', 'joy'],
+      excited: ['upbeat', 'dance', 'sparkle', 'flutter'],
+      calm: ['calm', 'peaceful', 'serene', 'soft'],
+      drowsy: ['dreamy', 'slow', 'lounge', 'hazy'],
+      tired: ['comfort', 'warm', 'healing', 'soft'],
+      sad: ['sad', 'melancholy', 'blue', 'ballad'],
+      lonely: ['lonely', 'night', 'midnight', 'solo'],
+      nostalgic: ['nostalgia', 'retro', 'memory', 'old'],
+      anxious: ['calm', 'breath', 'peace', 'gentle'],
+      stressed: ['relax', 'chill', 'healing', 'unwind'],
+      frustrated: ['release', 'rock', 'energetic', 'bold'],
+      focused: ['focus', 'deep', 'instrumental', 'flow']
+    };
+
+    const GENRE_ARTIST_POOLS = {
+      pop: ['Taylor Swift', 'Dua Lipa', 'Bruno Mars', 'The Weeknd', 'Billie Eilish', 'Ariana Grande', 'Ed Sheeran', 'Harry Styles', 'Sabrina Carpenter', 'Olivia Rodrigo', 'Coldplay', 'Charlie Puth', 'Carly Rae Jepsen', 'Troye Sivan', 'Lorde'],
+      kpop: ['IU', 'BTS', 'NewJeans', 'DAY6', 'AKMU', 'Taeyeon', 'Baek Yerin', '10CM', 'Jannabi', 'Paul Kim', 'Heize', 'Crush', 'Zion.T', 'SEVENTEEN', 'aespa', 'Red Velvet', 'Younha', 'BOL4', 'Lee Mujin', 'Lauv'],
+      rnb: ['Frank Ocean', 'Daniel Caesar', 'SZA', 'H.E.R.', 'Bruno Major', 'Khalid', 'Giveon', 'Brent Faiyaz', 'Summer Walker', 'Dean', 'Kehlani', 'Miguel', 'Anderson .Paak', 'mac ayres', 'Umi'],
+      soul: ['Leon Bridges', 'Alicia Keys', 'John Legend', 'Amy Winehouse', 'Aretha Franklin', 'Marvin Gaye', 'Stevie Wonder', 'Erykah Badu', "D'Angelo", 'Sam Cooke', 'Otis Redding', 'Bill Withers', 'Cleo Sol', 'Michael Kiwanuka'],
+      indie: ['Phoebe Bridgers', 'Clairo', 'Men I Trust', 'Mac DeMarco', 'Tame Impala', 'Beach House', 'Cigarettes After Sex', 'Japanese Breakfast', 'Hyukoh', 'The Black Skirts', 'Se So Neon', 'wave to earth', 'Vampire Weekend', 'Alvvays'],
+      rock: ['Arctic Monkeys', 'Radiohead', 'Oasis', 'Queen', 'The Beatles', 'Fleetwood Mac', 'Coldplay', 'Muse', 'The Strokes', 'Paramore', 'Foo Fighters', 'Nirvana', 'Jannabi', 'Silica Gel'],
+      hiphop: ['Kendrick Lamar', 'Tyler, The Creator', 'Drake', 'J. Cole', 'Mac Miller', 'Kanye West', 'Travis Scott', 'Nujabes', 'Childish Gambino', 'A$AP Rocky', 'Epik High', 'Beenzino', 'pH-1', 'DPR LIVE'],
+      jazz: ['Bill Evans', 'Chet Baker', 'Miles Davis', 'John Coltrane', 'Ella Fitzgerald', 'Norah Jones', 'Laufey', 'Stan Getz', 'Nina Simone', 'Duke Ellington', 'Herbie Hancock', 'Oscar Peterson', 'Robert Glasper', 'Kamasi Washington'],
+      lofi: ['Nujabes', 'J Dilla', 'Idealism', 'Kupla', 'Jinsang', 'eevee', 'potsu', 'Burbank', 'Aso', 'SwuM', 'Lofi Girl', 'kudasai', 'Sarcastic Sounds', 'In Love With a Ghost'],
+      ambient: ['Brian Eno', 'Ryuichi Sakamoto', 'Nils Frahm', 'Olafur Arnalds', 'Max Richter', 'Stars of the Lid', 'Aphex Ambient', 'Grouper', 'Jon Hopkins', 'Bing & Ruth', 'Harold Budd', 'Chihei Hatakeyama'],
+      citypop: ['Tatsuro Yamashita', 'Mariya Takeuchi', 'Anri', 'Miki Matsubara', 'Taeko Onuki', 'Junko Ohashi', 'Meiko Nakahara', 'Toshiki Kadomatsu', 'Yuming', 'Yukika', 'Bronze', 'Casiopea'],
+      acoustic: ['John Mayer', 'Jason Mraz', 'Jack Johnson', 'Damien Rice', 'Ed Sheeran', 'Iron & Wine', 'Nick Drake', 'Sufjan Stevens', 'Ben Howard', '10CM', 'Kwak Jin Eon', 'Roy Kim', 'Kwon Jin Ah']
+    };
+
+    const openOpusComposerCache = {};
+    const OPENOPUS_EPOCHS = ['Baroque', 'Classical', 'Early Romantic', 'Romantic', 'Late Romantic', '20th Century', 'Medieval', 'Renaissance', 'Post-War', '21st Century'];
+
+    async function queryOpenOpusClassical() {
+      const epoch = pickRand(OPENOPUS_EPOCHS);
+      const act = state.activity || 'rest';
+      const opGenre = (act === 'reading' || act === 'before_sleep' || act === 'studying')
+        ? pickRand(['Keyboard', 'Chamber'])
+        : (act === 'commute' || act === 'cooking' ? pickRand(['Orchestral', 'all']) : 'all');
+      const recentSet = new Set([...state.recentSongIds, ...state.currentRecs.map(x => x.id)]);
+      try {
+        let composers = openOpusComposerCache[epoch];
+        if (!composers) {
+          const cUrl = `https://api.openopus.org/composer/list/epoch/${encodeURIComponent(epoch)}.json`;
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 3500);
+          const res = await fetch(cUrl, { signal: ctrl.signal });
+          clearTimeout(t);
+          if (!res.ok) return [];
+          const data = await res.json();
+          composers = Array.isArray(data.composers) ? data.composers : [];
+          if (composers.length > 0) openOpusComposerCache[epoch] = composers;
+        }
+        if (!composers || composers.length === 0) return [];
+        const picked = [];
+        const pool = [...composers];
+        for (let i = 0; i < Math.min(3, pool.length); i++) {
+          const idx = Math.floor(Math.random() * pool.length);
+          picked.push(pool.splice(idx, 1)[0]);
+        }
+        const workLists = await Promise.all(picked.map(async (comp) => {
+          try {
+            const wUrl = `https://api.openopus.org/work/list/composer/${comp.id}/genre/${opGenre}.json`;
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 3500);
+            const res = await fetch(wUrl, { signal: ctrl.signal });
+            clearTimeout(t);
+            if (!res.ok) return [];
+            const wData = await res.json();
+            return (Array.isArray(wData.works) ? wData.works : []).map(w => ({ comp, work: w }));
+          } catch (e) {
+            return [];
+          }
+        }));
+        const out = [];
+        for (const { comp, work } of workLists.flat()) {
+          const id = `oo_${work.id}`;
+          const title = (work.title || '').trim();
+          const artist = (comp.complete_name || comp.name || '').trim();
+          if (!title || !artist) continue;
+          const normK = normalizeSongKey({ title, artist });
+          if (recentSet.has(id) || state.recentSongKeys.includes(normK)) continue;
+          if (CLASSICAL_EXCLUDE_RE.test(`${title} ${artist}`)) continue;
+          out.push({ id, title, artist, source: 'openopus', strictClassical: true });
+        }
+        out.sort((a, b) => (scoreAllGenreTrack(b) + Math.random() * 2.5) - (scoreAllGenreTrack(a) + Math.random() * 2.5));
+        return out.slice(0, 12);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function scoreAllGenreTrack(track) {
+      const hay = `${track.title || ''} ${track.artist || ''}`.toLowerCase();
+      let score = 0;
+      const tWords = TIME_QUERY_WORDS[state.timeOfDay] || [];
+      const wWords = WEATHER_QUERY_WORDS[state.weather] || [];
+      const cWords = CURRENT_MOOD_QUERY_WORDS[state.currentMood] || [];
+      const nWords = TARGET_QUERY_WORDS[state.targetMood] || [];
+      const actProf = ACTIVITY_GENERAL_PROFILE[state.activity] || ACTIVITY_GENERAL_PROFILE.rest;
+
+      tWords.forEach(w => { if (w && hay.includes(w.toLowerCase())) score += 2.0; });
+      wWords.forEach(w => { if (w && hay.includes(w.toLowerCase())) score += 2.5; });
+      cWords.forEach(w => { if (w && hay.includes(w.toLowerCase())) score += 2.0; });
+      nWords.forEach(w => { if (w && hay.includes(w.toLowerCase())) score += 3.5; });
+      actProf.words.forEach(w => { if (w && hay.includes(w.toLowerCase())) score += 3.5; });
+      if (actProf.avoid && actProf.avoid.test(hay)) score -= 4.5;
+      return score;
+    }
+
     async function fetchLiveTracks() {
 
       const targetTags = MOOD_TO_MB_TAGS[state.targetMood] || ['pop', 'indie'];
@@ -1071,40 +1264,49 @@
         const composers = ["Johann Sebastian Bach", "Antonio Vivaldi", "George Frideric Handel", "Domenico Scarlatti", "Alessandro Scarlatti", "Henry Purcell", "Arcangelo Corelli", "Georg Philipp Telemann", "Jean-Philippe Rameau", "Claudio Monteverdi", "Tomaso Albinoni", "Dieterich Buxtehude", "Johann Pachelbel", "Giovanni Battista Pergolesi", "François Couperin", "Jean-Baptiste Lully", "Giuseppe Tartini", "Alessandro Marcello", "Benedetto Marcello", "Pietro Locatelli", "Sylvius Leopold Weiss", "Heinrich Ignaz Franz Biber", "Wolfgang Amadeus Mozart", "Ludwig van Beethoven", "Joseph Haydn", "Christoph Willibald Gluck", "Muzio Clementi", "Luigi Boccherini", "Carl Philipp Emanuel Bach", "Johann Christian Bach", "Carl Stamitz", "Antonio Salieri", "Johann Nepomuk Hummel", "Carl Czerny", "Friedrich Kuhlau", "Anton Diabelli", "Karl Ditters von Dittersdorf", "Giovanni Battista Viotti", "Louis Spohr", "Frédéric Chopin", "Franz Schubert", "Robert Schumann", "Clara Schumann", "Franz Liszt", "Johannes Brahms", "Felix Mendelssohn", "Fanny Mendelssohn", "Pyotr Ilyich Tchaikovsky", "Sergei Rachmaninoff", "Alexander Scriabin", "Bedřich Smetana", "Antonín Dvořák", "Richard Strauss", "Johann Strauss II", "Johann Strauss I", "Josef Strauss", "Gustav Mahler", "Hector Berlioz", "Georges Bizet", "Camille Saint-Saëns", "Gabriel Fauré", "César Franck", "Edvard Grieg", "Jean Sibelius", "Edward Elgar", "Niccolò Paganini", "Modest Mussorgsky", "Nikolai Rimsky-Korsakov", "Alexander Borodin", "Gioachino Rossini", "Giuseppe Verdi", "Giacomo Puccini", "Richard Wagner", "Anton Bruckner", "Max Bruch", "Pablo de Sarasate", "Henryk Wieniawski", "Isaac Albéniz", "Enrique Granados", "Vincenzo Bellini", "Gaetano Donizetti", "Charles-Valentin Alkan", "Sigismond Thalberg", "Giacomo Meyerbeer", "Charles Gounod", "Jacques Offenbach", "Édouard Lalo", "Ernest Chausson", "Paul Dukas", "Emmanuel Chabrier", "Jules Massenet", "Léo Delibes", "Henri Vieuxtemps", "Joseph Joachim", "Max Reger", "Ferruccio Busoni", "Hugo Wolf", "Alexander Glazunov", "Sergei Lyapunov", "Mily Balakirev", "César Cui", "Vasily Kalinnikov", "Anton Arensky", "Sergei Taneyev", "Anatoly Liadov", "Nikolai Medtner", "Leoš Janáček", "Josef Suk", "Zdeněk Fibich", "Bohuslav Martinů", "Zoltán Kodály", "George Enescu", "Carl Nielsen", "Johan Svendsen", "Hugo Alfvén", "Wilhelm Stenhammar", "Franz Berwald", "Franz Lehár", "Emmerich Kálmán", "Pietro Mascagni", "Ruggero Leoncavallo", "Claude Debussy", "Maurice Ravel", "Erik Satie", "Igor Stravinsky", "Sergei Prokofiev", "Dmitri Shostakovich", "Béla Bartók", "Gustav Holst", "Ralph Vaughan Williams", "Ottorino Respighi", "Manuel de Falla", "Samuel Barber", "Aaron Copland", "William Walton", "Benjamin Britten", "Frank Bridge", "Gerald Finzi", "Arnold Bax", "John Ireland", "Frederick Delius", "Joaquín Rodrigo", "Joaquín Turina", "Francisco Tárrega", "Agustín Barrios", "Fernando Sor", "Mauro Giuliani", "Matteo Carcassi", "Heitor Villa-Lobos", "Alberto Ginastera", "Manuel Ponce", "George Gershwin", "Leonard Bernstein", "Amy Beach", "Edward MacDowell", "Aram Khachaturian"];
         const c1 = pickRand(composers);
         const c2 = pickRand(composers);
-        const needWord = pickRand(TARGET_QUERY_WORDS[state.targetMood] || ['']);
-        const [it1, it2, mb1] = await Promise.all([
-          queryITunesTracks(`${c1} ${needWord}`, 25),
-          queryITunesTracks(c2, 25),
+        const cMood = pickRand(CLASSICAL_MOOD_WORDS[state.targetMood] || ['sonata']);
+        const cWeather = pickRand(CLASSICAL_WEATHER_WORDS[state.weather] || ['prelude']);
+        const [oo1, itMood, it1, it2, mb1] = await Promise.all([
+          queryOpenOpusClassical(),
+          queryITunesTracks(`${cMood} ${cWeather}`, 50),
+          queryITunesTracks(`${c1} ${cMood}`, 50),
+          queryITunesTracks(`${c2} ${cWeather}`, 50),
           queryMusicBrainzRecordings(`artist:"${c1}" AND status:official`, 30, Math.min(200, state.rerollDepth * 25))
         ]);
-        baseTracks = [...it1.slice(0, 2), ...it2.slice(0, 2), ...mb1, ...it1.slice(2), ...it2.slice(2)];
-        for (let i = baseTracks.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
-        }
+        baseTracks = [...oo1.slice(0, 3), ...itMood.slice(0, 2), ...it1.slice(0, 2), ...it2.slice(0, 2), ...mb1, ...oo1.slice(3), ...itMood.slice(2), ...it1.slice(2), ...it2.slice(2)];
+        baseTracks.sort((a, b) => (scoreAllGenreTrack(b) + Math.random() * 2.8) - (scoreAllGenreTrack(a) + Math.random() * 2.8));
       } else {
         const tWord = pickRand(TIME_QUERY_WORDS[state.timeOfDay] || ['']);
         const wWord = pickRand(WEATHER_QUERY_WORDS[state.weather] || ['']);
+        const cWord = pickRand(CURRENT_MOOD_QUERY_WORDS[state.currentMood] || ['']);
         const nWord = pickRand(TARGET_QUERY_WORDS[state.targetMood] || ['']);
         const gWord = pickRand(GENRE_QUERY_WORDS[state.genre] || ['']);
+        const actProf = ACTIVITY_GENERAL_PROFILE[state.activity] || ACTIVITY_GENERAL_PROFILE.rest;
+        const actWord = pickRand(actProf.words);
+
+        const poolArtists = GENRE_ARTIST_POOLS[state.genre] || Object.values(GENRE_ARTIST_POOLS).flat();
+        const a1 = pickRand(poolArtists);
+        const a2 = pickRand(poolArtists);
+
         const moodQuery1 = [wWord, nWord, gWord].filter(Boolean).join(' ');
-        const moodQuery2 = [tWord, nWord, gWord].filter(Boolean).join(' ');
+        const moodQuery2 = [tWord, actWord, gWord].filter(Boolean).join(' ');
+        const artistQuery = state.genre === 'all' ? `${a1} ${nWord}` : `${a1}`;
+        const artistQuery2 = state.genre === 'all' ? `${a2} ${cWord}` : `${a2} ${actWord}`;
 
         const basePool = genreTags.length > 0 ? genreTags : [...targetTags, ...weatherTags];
         const chosenTag = pickRand(basePool);
 
-        const [it1, it2, mbTracks] = await Promise.all([
-          queryITunesTracks(moodQuery1, 35),
-          queryITunesTracks(moodQuery2, 35),
+        const [it1, it2, it3, it4, mbTracks] = await Promise.all([
+          queryITunesTracks(moodQuery1, 40),
+          queryITunesTracks(moodQuery2, 40),
+          queryITunesTracks(artistQuery, 35),
+          queryITunesTracks(artistQuery2, 35),
           queryMusicBrainzRecordings(`tag:"${chosenTag}" AND status:official`, 30, Math.min(1200, 100 + state.rerollDepth * 150))
         ]);
-        baseTracks = [...it1, ...it2, ...mbTracks];
-        for (let i = baseTracks.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [baseTracks[i], baseTracks[j]] = [baseTracks[j], baseTracks[i]];
-        }
+        baseTracks = [...it3.slice(0, 2), ...it4.slice(0, 2), ...it1, ...it2, ...mbTracks, ...it3.slice(2), ...it4.slice(2)];
+        baseTracks.sort((a, b) => (scoreAllGenreTrack(b) + Math.random() * 2.8) - (scoreAllGenreTrack(a) + Math.random() * 2.8));
       }
-      // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre tracks
+      // Blend: up to 2 direct artist tracks + up to 1 taste-tag track + mood/genre/activity tracks
       const combined = [];
       const usedKeys = new Set();
       const usedArtists = new Set();
@@ -1228,6 +1430,7 @@
             currentMood: state.currentMood,
             targetMood: state.targetMood,
             genre: state.genre,
+            activity: state.activity,
             excludeIds: Array.from(new Set([...state.recentSongIds, ...state.currentRecs.map(x => x.id)])),
             favArtists: state.favArtists.map(f => getFavName(f)).filter(Boolean)
           })
@@ -1360,6 +1563,7 @@
       const cObj = CURRENT_MOODS.find(m => m.id === state.currentMood);
       const tObj = TARGET_MOODS.find(t => t.id === state.targetMood);
       const gObj = GENRES.find(g => g.id === state.genre);
+      const aObj = ACTIVITIES.find(a => a.id === state.activity) || ACTIVITIES[6];
 
       const bgClass = wObj.weatherBg || timeObj.bg;
       document.body.className = `min-h-screen text-slate-800 bg-gradient-to-br ${bgClass}`;
@@ -1372,6 +1576,7 @@
       setBadge('badge-currentMood', cObj);
       setBadge('badge-targetMood', tObj);
       setBadge('badge-genre', gObj);
+      setBadge('badge-activity', aObj);
 
       Object.entries(state.openSections).forEach(([key, isOpen]) => {
         const panel = document.getElementById(`panel-${key}`);
@@ -1391,6 +1596,7 @@
       renderButtonGroup('current-mood-options', CURRENT_MOODS, 'currentMood', indigoActive);
       renderButtonGroup('target-mood-options', TARGET_MOODS, 'targetMood', indigoActive);
       renderButtonGroup('genre-options', GENRES, 'genre', indigoActive);
+      renderButtonGroup('activity-options', ACTIVITIES, 'activity', indigoActive);
     }
 
     function isSongSavedInCurrentContext(songId) {
@@ -1720,7 +1926,8 @@
       state.weather = 'rainy';
       state.currentMood = 'tired';
       state.targetMood = 'comfort';
-      state.genre = 'all';
+      state.genre = 'indie';
+      state.activity = 'rest';
       state.hasRecommended = false;
       state.currentRecs = [];
       state.activeTab = 'select';
